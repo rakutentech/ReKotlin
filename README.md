@@ -119,9 +119,15 @@ The `newState` method will be called by the `Store` whenever a new app state is 
 
 Button taps result in dispatched actions that will be handled by the store and its reducers, resulting in a new app state.
 
-This is a very basic example that only shows a subset of ReKotlin's features, read the Getting Started Guide __(not ported yet)__ to see how you can build entire apps with this architecture. For a complete implementation of this example see the [ReKotlin-CounterExample](https://github.com/GeoThings/ReKotlin-CounterExample) project.
+This is a very basic example that only shows a subset of ReKotlin's features, read the Getting Started Guide __(not ported yet)__ to see how you can build entire apps with this architecture.
 
 [You can also watch this talk on the motivation behind the original ReSwift](https://realm.io/news/benji-encz-unidirectional-data-flow-swift/).
+
+## Examples
+
+- [ReduxMovieExample](https://github.com/ReKotlin/ReduxMovieExample) - An application which uses an API to display movies and stores favorites into a local database.
+- [rekotlin-router-github-example](https://github.com/ReKotlin/rekotlin-router-github-example) - An application which displays user's github repositories along with authentication and navigation using [rekotlin-router](https://github.com/ReKotlin/rekotlin-router)
+- [ReKotlin-CounterExample](https://github.com/GeoThings/ReKotlin-CounterExample) - A simple counter application
 
 ## Why ReKotlin?
 
