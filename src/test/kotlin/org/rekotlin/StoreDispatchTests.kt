@@ -1,8 +1,7 @@
-package tw.geothings.rekotlin.junit
+package org.rekotlin
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.*
-import tw.geothings.rekotlin.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread

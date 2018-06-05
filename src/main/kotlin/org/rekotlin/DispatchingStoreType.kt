@@ -1,4 +1,4 @@
-package tw.geothings.rekotlin
+package org.rekotlin
 
 /**
  * Created by Taras Vozniuk on 31/07/2017.
@@ -24,5 +24,25 @@ package tw.geothings.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-interface StateType {}
+/**
+ * Defines the interface of a dispatching, stateless Store in ReSwift. `StoreType` is
+ * the default usage of this interface. Can be used for store variables where you don't
+ * care about the state, but want to be able to dispatch actions.
+ */
+interface DispatchingStoreType {
 
+    /**
+     * Dispatches an action. This is the simplest way to modify the stores state.
+     *
+     * Example of dispatching an action:
+     * <pre>
+     * <code>
+     * store.dispatch( CounterAction.IncreaseCounter )
+     * </code>
+     * </pre>
+     *
+     * @param action The action that is being dispatched to the store
+     * @return By default returns the dispatched action, but middlewares can change the type, e.g. to return promises
+     */
+    fun dispatch(action: Action)
+}

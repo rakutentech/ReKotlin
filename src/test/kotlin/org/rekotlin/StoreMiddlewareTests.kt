@@ -1,10 +1,7 @@
-package tw.geothings.rekotlin.junit
+package org.rekotlin
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import tw.geothings.rekotlin.Middleware
-import tw.geothings.rekotlin.StateType
-import tw.geothings.rekotlin.Store
 
 /**
  * Created by Taras Vozniuk on 10/08/2017.
