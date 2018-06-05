@@ -1,4 +1,4 @@
-## ReKotlin (preview)
+## ReKotlin
 
 [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReSwift/ReSwift/blob/master/LICENSE.md)
 
