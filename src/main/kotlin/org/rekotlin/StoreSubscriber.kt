@@ -1,4 +1,4 @@
-package tw.geothings.rekotlin
+package org.rekotlin
 
 /**
  * Created by Taras Vozniuk on 07/08/2017.

@@ -1,7 +1,7 @@
+package org.rekotlin
+
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
-import tw.geothings.rekotlin.Store
-import tw.geothings.rekotlin.junit.*
 
 /**
  * Created by Taras Vozniuk on 10/08/2017.

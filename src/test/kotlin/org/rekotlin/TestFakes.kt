@@ -1,8 +1,4 @@
-package tw.geothings.rekotlin.junit
-
-import org.junit.jupiter.api.Test
-import tw.geothings.rekotlin.*
-import javax.swing.plaf.nimbus.State
+package org.rekotlin
 
 /**
  * Created by Taras Vozniuk on 10/08/2017.
