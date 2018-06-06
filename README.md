@@ -1,6 +1,8 @@
 ## ReKotlin
 
 [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReSwift/ReSwift/blob/master/LICENSE.md)
+[![Build Status](https://travis-ci.org/ReKotlin/ReKotlin.svg?branch=master)](https://travis-ci.org/ReKotlin/ReKotlin)
+[![Download](https://api.bintray.com/packages/rekotlin/rekotlin/rekotlin/images/download.svg) ](https://bintray.com/rekotlin/rekotlin/rekotlin/_latestVersion)
 
 Port of [ReSwift](https://github.com/ReSwift/ReSwift) to Kotlin, which corresponds to [ReSwift/4.0.0](https://github.com/ReSwift/ReSwift/releases/tag/4.0.0)
 
@@ -13,7 +15,6 @@ ReKotlin is a [Redux](https://github.com/reactjs/redux)-like implementation of t
 - **State Changes**: in a ReKotlin app you can only perform state changes through actions. Actions are small pieces of data that describe a state change. By drastically limiting the way state can be mutated, your app becomes easier to understand and it gets easier to work with many collaborators.
 
 The ReKotlin library is tiny - allowing users to dive into the code, understand every single line and hopefully contribute.
-
 
 ## About ReKotlin
 
@@ -158,20 +159,10 @@ To get an understanding of the core principles we recommend reading the brillian
 
 ## Installation
 
-We are still in preview here, so the package is not yet available at maven central repository. Instead please use our development repository:
-
 ```gradle
-// build.gradle
-repositories {
-    maven {
-        url 'https://rekotlin.s3-ap-southeast-1.amazonaws.com/snapshots'
-    }
-}
-
 dependencies {
-	compile 'tw.geothings.rekotlin:rekotlin:0.1.0-SNAPSHOT'
+    implementation 'org.rekotlin:rekotlin:1.0.0'
 }
-
 ```
 
 ## Differences with ReSwift
