@@ -75,22 +75,13 @@ class MainActivity : AppCompatActivity(){
 ```
 
 
-Lastly, your view layer, in this case an activity, needs to tie into this system by subscribing to store updates and emitting actions whenever the app state needs to be changed:
+Lastly, your view layer, in this case an activity,
+needs to tie into this system by subscribing to store updates and
+emitting actions whenever the app state needs to be changed
+(assuming that `snake_case` View properties are coming from [Kotlin Android Extensions](https://kotlinlang.org/docs/tutorials/android-plugin.html)):
 
 ```kotlin
 class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
-
-    private val counterLabel: TextView by lazy {
-        this.findViewById(R.id.counter_label) as TextView
-    }
-
-    private val buttonUp: Button by lazy {
-        this.findViewById(R.id.button) as Button
-    }
-
-    private val buttonDown: Button by lazy {
-        this.findViewById(R.id.button2) as Button
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,10 +89,10 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
         // when either button is tapped, an action is dispatched to the store
         // in order to update the application state
-        this.buttonUp.setOnClickListener {
+        button_up.setOnClickListener {
             mainStore.dispatch(CounterActionIncrease())
         }
-        this.buttonDown.setOnClickListener {
+        button_down.setOnClickListener {
             mainStore.dispatch(CounterActionDecrease())
         }
 
@@ -111,7 +102,7 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
     override fun newState(state: AppState) {
         // when the state changes, the UI is updated to reflect the current state
-        this.counterLabel.text = "${state.counter}"
+        counter_label.text = "${state.counter}"
     }
 }
 ```
