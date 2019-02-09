@@ -72,9 +72,9 @@ class Store<State: StateType> (
         // if subscribersAutomaticallySkipsRepeat is set
         // skipRepeats will be applied with kotlin structural equality
         if (subscribersAutomaticallySkipsRepeat){
-            this.subscribe(subscriber, {
+            this.subscribe(subscriber) {
                 it.skipRepeats()
-            })
+            }
         } else {
             this.subscribe(subscriber, null)
         }
@@ -109,6 +109,12 @@ class Store<State: StateType> (
         val index = this.subscriptions.indexOfFirst { it.subscriber === subscriber }
         if (index != -1){
             this.subscriptions.removeAt(index)
+        }
+    }
+
+    fun unsubscribe(blockSubscriptions: BlockSubscriptions) {
+        blockSubscriptions.blockSubscriberList.forEach {
+            unsubscribe(it)
         }
     }
 

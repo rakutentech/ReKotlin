@@ -1,9 +1,6 @@
 package org.rekotlin
 
 /**
- * Created by Taras Vozniuk on 31/07/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -28,10 +25,10 @@ package org.rekotlin
  * All actions that want to be able to be dispatched to a store need to conform to this protocol
  * Currently it is just a marker protocol with no requirements.
  */
-interface Action {}
+interface Action
 
 /**
  * Initial Action that is dispatched as soon as the store is created.
  * Reducers respond to this action by configuring their initial state.
  */
-class ReKotlinInit: Action {}
+class ReKotlinInit: Action
