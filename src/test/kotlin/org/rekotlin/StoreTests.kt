@@ -43,7 +43,7 @@ internal class StoreTests {
 
 }
 
-internal data class CounterState(var count: Int = 0): StateType
+internal data class CounterState(var count: Int = 0) : StateType
 
 internal class MockReducer {
 

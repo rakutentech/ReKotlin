@@ -1,12 +1,14 @@
 package org.rekotlin
 
 /**
- * BlockSubscriber allows subscription to a single state. This methodology is useful when subscribing multiple states
- * within single class.
+ * BlockSubscriber allows subscribing to multiple states in a single class.
  *
  * Ex
  * val subscriber : BlockSubscriber<MyState>= BlockSubscriber { myState -> }
+ * val subscriber2 : BlockSubscriber<MyState2>= BlockSubscriber { myState2 -> }
+ *
  * store.subscribe(subscriber)
+ * store.subscribe(subscriber2)
  */
 class BlockSubscriber<S>(private val block: (S) -> Unit) : StoreSubscriber<S> {
 

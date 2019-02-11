@@ -22,4 +22,5 @@ package org.rekotlin
  */
 
 typealias DispatchFunction = (Action) -> Unit
+
 typealias Middleware<State> = (DispatchFunction, () -> State?) -> (DispatchFunction) -> DispatchFunction
