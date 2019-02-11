@@ -1,9 +1,6 @@
 package org.rekotlin
 
 /**
- * Created by Taras Vozniuk on 07/08/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -35,7 +32,7 @@ package org.rekotlin
  * subscription and passes any values that come through this subscriptions to the subscriber.
  *
  */
-class SubscriptionBox<State, SelectedState>(val originalSubscription: Subscription<State>,
+class SubscriptionBox<State, SelectedState>(private val originalSubscription: Subscription<State>,
                                             transformedSubscription: Subscription<SelectedState>?,
                                             val subscriber: StoreSubscriber<SelectedState>) where State: StateType {
 
@@ -85,6 +82,7 @@ class SubscriptionBox<State, SelectedState>(val originalSubscription: Subscripti
 
 class Subscription<State> {
 
+    @Suppress("FunctionName")
     private fun <Substate> _select(selector: ((State) -> Substate)): Subscription<Substate> {
         return Subscription { sink ->
             this.observe { oldState, newState ->
@@ -157,7 +155,7 @@ class Subscription<State> {
     // endregion
 
     // region: Internals
-    var observer: ((State?, State) -> Unit)? = null
+    private var observer: ((State?, State) -> Unit)? = null
 
     init {}
     constructor()

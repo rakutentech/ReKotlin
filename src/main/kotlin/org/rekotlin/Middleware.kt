@@ -1,9 +1,6 @@
 package org.rekotlin
 
 /**
- * Created by Taras Vozniuk on 31/07/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -25,4 +22,5 @@ package org.rekotlin
  */
 
 typealias DispatchFunction = (Action) -> Unit
+
 typealias Middleware<State> = (DispatchFunction, () -> State?) -> (DispatchFunction) -> DispatchFunction

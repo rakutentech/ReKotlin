@@ -31,6 +31,7 @@ import kotlin.concurrent.thread
  */
 
 internal typealias TestSubscriber = TestStoreSubscriber<TestAppState>
+
 internal typealias CallbackSubscriber = CallbackStoreSubscriber<TestAppState>
 
 internal class StoreDispatchTests {
@@ -39,16 +40,18 @@ internal class StoreDispatchTests {
     var store = Store(reducer::handleAction, TestAppState())
 
     @BeforeEach
-    fun setUp() {}
+    fun setUp() {
+    }
 
     @AfterEach
-    fun tearDown() {}
+    fun tearDown() {
+    }
 
     /**
      * it throws an exception when a reducer dispatches an action
      */
     @Test
-    fun testThrowsExceptionWhenReducersDispatch(){
+    fun testThrowsExceptionWhenReducersDispatch() {
         //TODO: testThrowsExceptionWhenReducersDispatch
     }
 
@@ -56,7 +59,7 @@ internal class StoreDispatchTests {
      * it accepts action creators
      */
     @Test
-    fun testAcceptsActionCreators(){
+    fun testAcceptsActionCreators() {
         store.dispatch(SetValueAction(5))
 
         val doubleValueActionCreator: ActionCreator<TestAppState, StoreType<TestAppState>> = { state, store ->
@@ -100,7 +103,7 @@ internal class StoreDispatchTests {
      * it calls the callback once state update from async action is complete
      */
     @Test
-    fun testCallsCallbackOnce(){
+    fun testCallsCallbackOnce() {
 
         val awaitEntity = CountDownLatch(1)
 

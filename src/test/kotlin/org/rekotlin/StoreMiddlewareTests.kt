@@ -69,7 +69,7 @@ internal val stateAccessingMiddleware: Middleware<TestStringAppState> = { dispat
             val stringAction = action as? SetValueStringAction
 
             // avoid endless recursion by checking if we've dispatched exactly this action
-            if (appState?.testValue == "OK" && stringAction?.value != "Not OK"){
+            if (appState?.testValue == "OK" && stringAction?.value != "Not OK") {
                 // dispatch a new action
                 dispatch(SetValueStringAction("Not OK"))
 
@@ -88,7 +88,7 @@ internal class StoreMiddlewareTests {
      * it can decorate dispatch function
      */
     @Test
-    fun testDecorateDispatch(){
+    fun testDecorateDispatch() {
 
         val reducer = TestValueStringReducer()
         val store = Store(

@@ -109,6 +109,46 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
 The `newState` method will be called by the `Store` whenever a new app state is available, this is where we need to adjust our view to reflect the latest app state.
 
+When working with multiple states in a single class, BlockSubscriber can be used for listening to states in it's specific closure instead of using StoreSubscriber<>
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    private val counterLabel: TextView by lazy {
+        this.findViewById(R.id.counter_label) as TextView
+    }
+
+    private val buttonUp: Button by lazy {
+        this.findViewById(R.id.button) as Button
+    }
+
+    private val buttonDown: Button by lazy {
+        this.findViewById(R.id.button2) as Button
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val appStateSubscriber = BlockSubscriber<AppState> { appState ->
+            this.counterLabel.text = "${appState.counter}"
+        }
+
+        // when either button is tapped, an action is dispatched to the store
+        // in order to update the application state
+        this.buttonUp.setOnClickListener {
+            mainStore.dispatch(CounterActionIncrease())
+        }
+        this.buttonDown.setOnClickListener {
+            mainStore.dispatch(CounterActionDecrease())
+        }
+
+        // subscribe to state changes
+        mainStore.subscribe(appStateSubscriber)
+    }
+}
+```
+
 Button taps result in dispatched actions that will be handled by the store and its reducers, resulting in a new app state.
 
 This is a very basic example that only shows a subset of ReKotlin's features, read the Getting Started Guide __(not ported yet)__ to see how you can build entire apps with this architecture.
