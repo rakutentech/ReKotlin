@@ -252,7 +252,6 @@ val store = Store(
 Please format your code using ``kotlinFormatter.xml`` file from [here](Docs/kotlinFormatter.xml)
 Using this code formatter will help us maintain consistency in code style.
 
-
 ## Credits
 
 - Many thanks to [Benjamin Encz](https://github.com/Ben-G) and other ReSwift contributors for buidling original [ReSwift](https://github.com/ReSwift/ReSwift) that we really enjoyed working with.
