@@ -5,3 +5,4 @@ before_install:
 - chmod +x gradlew
 script:
 - "./gradlew clean build"
+- if [ TRAVIS_BRANCH == "master" ]; then ./gradlew bintrayUpload; fi
