@@ -247,9 +247,9 @@ val store = Store(
 	automaticallySkipRepeats = false)
 ```
 
-##Contributing
+## Contributing
 
-Please format your code using ``kotlinFormatter.xml`` file from [here](Docs/kotlinFormatter.xml).
+Please format your code using ``kotlinFormatter.xml`` file from [here](Docs/kotlinFormatter.xml)
 Using this code formatter will help us maintain consistency in code style.
 
 ## Credits
