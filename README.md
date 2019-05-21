@@ -192,7 +192,7 @@ To get an understanding of the core principles we recommend reading the brillian
 
 ```gradle
 dependencies {
-    implementation 'org.rekotlin:rekotlin:1.0.0'
+    implementation 'org.rekotlin:rekotlin:1.0.4'
 }
 ```
 
