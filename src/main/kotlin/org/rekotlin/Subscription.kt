@@ -51,7 +51,7 @@ class SubscriptionBox<State, SelectedState>(private val originalSubscription: Su
         // If we haven't received a transformed subscription, we forward all values
         // from the original subscription.
         val forwardFromOriginalSubscription = {
-            // original Swift implementation has type errased subscriber
+            // original Swift implementation has type erased subscriber
             // to avoid casting and passing incompatible value
             // conditional cast was added check
             originalSubscription.observe { _, newState ->
