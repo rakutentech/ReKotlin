@@ -1,5 +1,5 @@
 def libraryGroup = 'org.rekotlin'
-def libraryVersion = '1.0.3'
+def libraryVersion = '1.0.4'
 
 apply plugin: 'kotlin'
 apply plugin: 'org.jetbrains.dokka'
@@ -63,8 +63,8 @@ compileTestKotlin {
 }
 
 bintray {
-    user = System.getenv('bintrayUser')
-    key = System.getenv('bintrayKey')
+    user = System.getProperty('bintrayUser')
+    key = System.getProperty('bintrayKey')
     publications = ['rekotlin']
     pkg {
         repo = 'rekotlin'
