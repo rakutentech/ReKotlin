@@ -22,4 +22,3 @@ package org.rekotlin
  */
 
 interface StateType
-

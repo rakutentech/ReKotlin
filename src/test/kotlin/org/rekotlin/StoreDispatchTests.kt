@@ -1,11 +1,3 @@
-package org.rekotlin
-
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.*
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -30,6 +22,16 @@ import kotlin.concurrent.thread
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package org.rekotlin
+
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
+
 internal typealias TestSubscriber = TestStoreSubscriber<TestAppState>
 
 internal typealias CallbackSubscriber = CallbackStoreSubscriber<TestAppState>
@@ -52,7 +54,7 @@ internal class StoreDispatchTests {
      */
     @Test
     fun testThrowsExceptionWhenReducersDispatch() {
-        //TODO: testThrowsExceptionWhenReducersDispatch
+        // TODO: testThrowsExceptionWhenReducersDispatch
     }
 
     /**
@@ -126,4 +128,3 @@ internal class StoreDispatchTests {
         assertTrue(awaitEntity.await(1, TimeUnit.SECONDS))
     }
 }
-

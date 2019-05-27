@@ -1,9 +1,3 @@
-package org.rekotlin
-
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -28,18 +22,23 @@ import org.junit.jupiter.api.Assertions.*
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package org.rekotlin
+
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+
 internal class StoreSubscriberTests {
 
     /**
      * it allows to pass a state selector closure
      */
     @Test
-    fun testAllowsSelectorClosure(){
+    fun testAllowsSelectorClosure() {
         val reducer = TestReducer()
         val store = Store(reducer = reducer::handleAction, state = TestAppState())
         val subscriber = TestFilteredSubscriber<Int?>()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select { it.testValue }
         }
 
@@ -56,12 +55,12 @@ internal class StoreSubscriberTests {
      * it supports complex state selector closures
      */
     @Test
-    fun testComplexStateSelector(){
+    fun testComplexStateSelector() {
         val reducer = TestComplexAppStateReducer()
         val store = Store(reducer = reducer::handleAction, state = TestComplexAppState())
         val subscriber = TestSelectiveSubscriber()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select { Pair(it.testValue, it.otherState?.name) }
         }
         store.dispatch(SetValueAction(5))
@@ -81,7 +80,7 @@ internal class StoreSubscriberTests {
         val store = Store(reducer = reducer::handleAction, state = state)
         val subscriber = TestFilteredSubscriber<Int?>()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select {
                 it.testValue
             }.skipRepeats { oldState, newState ->
@@ -108,7 +107,7 @@ internal class StoreSubscriberTests {
         val store = Store(reducer::handleAction, state)
         val subscriber = TestFilteredSubscriber<String>()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select { it.testValue }.skipRepeats()
         }
 
@@ -124,15 +123,15 @@ internal class StoreSubscriberTests {
      * it skips repeated state values by when `skipRepeats` returns `true`.
      */
     @Test
-    fun testSkipsStateUpdatesForCustomEqualityChecks(){
+    fun testSkipsStateUpdatesForCustomEqualityChecks() {
         val reducer = TestCustomAppStateReducer()
         val state = TestCustomAppState(5)
         val store = Store(reducer::handleAction, state)
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select { it.substate }
-                    .skipRepeats { oldState, newState -> oldState.value == newState.value }
+                .skipRepeats { oldState, newState -> oldState.value == newState.value }
         }
 
         assertEquals(5, subscriber.recievedValue?.value)
@@ -197,15 +196,15 @@ internal class StoreSubscriberTests {
     }
 
     @Test
-    fun testSkipWhen(){
+    fun testSkipWhen() {
         val reducer = TestCustomAppStateReducer()
         val state = TestCustomAppState(5)
         val store = Store(reducer::handleAction, state)
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select { it.substate }
-                    .skip { oldState, newState -> oldState.value == newState.value }
+                .skip { oldState, newState -> oldState.value == newState.value }
         }
 
         assertEquals(5, subscriber.recievedValue?.value)
@@ -217,15 +216,15 @@ internal class StoreSubscriberTests {
     }
 
     @Test
-    fun testOnlyWhen(){
+    fun testOnlyWhen() {
         val reducer = TestCustomAppStateReducer()
         val state = TestCustomAppState(5)
         val store = Store(reducer::handleAction, state)
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
-        store.subscribe(subscriber){
+        store.subscribe(subscriber) {
             it.select { it.substate }
-                    .only { oldState, newState -> oldState.value != newState.value }
+                .only { oldState, newState -> oldState.value != newState.value }
         }
 
         assertEquals(5, subscriber.recievedValue?.value)
@@ -237,11 +236,11 @@ internal class StoreSubscriberTests {
     }
 }
 
-internal class TestFilteredSubscriber<T>: StoreSubscriber<T> {
+internal class TestFilteredSubscriber<T> : StoreSubscriber<T> {
     var recievedValue: T? = null
     var newStateCallCount = 0
 
-    override fun newState(state: T){
+    override fun newState(state: T) {
         recievedValue = state
         newStateCallCount += 1
     }
@@ -251,7 +250,7 @@ internal class TestFilteredSubscriber<T>: StoreSubscriber<T> {
  * Example of how you can select a substate. The return value from
  *`selectSubstate` and the argument for `newState` need to match up.
  */
-class TestSelectiveSubscriber: StoreSubscriber<Pair<Int?, String?>> {
+class TestSelectiveSubscriber : StoreSubscriber<Pair<Int?, String?>> {
     var recievedValue: Pair<Int?, String?> = Pair(null, null)
 
     override fun newState(state: Pair<Int?, String?>) {
@@ -259,17 +258,17 @@ class TestSelectiveSubscriber: StoreSubscriber<Pair<Int?, String?>> {
     }
 }
 
-
-internal data class TestComplexAppState(val testValue: Int?, val otherState: OtherState?): StateType {
-    constructor(): this(null, null)
+internal data class TestComplexAppState(val testValue: Int?, val otherState: OtherState?) : StateType {
+    constructor() : this(null, null)
 }
+
 internal data class OtherState(val name: String?, val age: Int?)
 
 internal class TestComplexAppStateReducer {
     fun handleAction(action: Action, state: TestComplexAppState?): TestComplexAppState {
         var state = state ?: TestComplexAppState()
 
-        when(action){
+        when (action) {
             is SetValueAction -> {
                 state = state.copy(testValue = action.value)
             }
@@ -282,4 +281,4 @@ internal class TestComplexAppStateReducer {
     }
 }
 
-internal data class SetOtherStateAction(val otherState: OtherState): Action
+internal data class SetOtherStateAction(val otherState: OtherState) : Action

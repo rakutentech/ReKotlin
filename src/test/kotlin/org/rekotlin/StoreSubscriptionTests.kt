@@ -1,8 +1,3 @@
-package org.rekotlin
-
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -27,6 +22,11 @@ import org.junit.jupiter.api.Assertions.*
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package org.rekotlin
+
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+
 internal class StoreSubscriptionTests {
 
     var reducer = TestReducer()
@@ -34,7 +34,7 @@ internal class StoreSubscriptionTests {
 
     // this is not going to work in JVM.
     // WeakReference also can't solve it since gc collects non-deterministically
-    //TODO: Discuss with ReSwift community for this inconsistency
+    // TODO: Discuss with ReSwift community for this inconsistency
     /*
     /**
      * It does not strongly capture an observer
@@ -237,5 +237,4 @@ internal class StoreSubscriptionTests {
         // execute
         store.dispatch(SetValueStringAction("unsubscribe"))
     }
-
 }
