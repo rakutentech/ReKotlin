@@ -1,5 +1,3 @@
-package org.rekotlin
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -24,13 +22,18 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package org.rekotlin
+
 internal data class TestAppState(val testValue: Int? = null) : StateType
 
 internal data class TestStringAppState(val testValue: String = "Initial") : StateType
 
 internal data class TestCustomSubstate(val value: Int) : StateType
 
-internal data class TestBlockState(val testAppState: TestAppState? = null, val testStringAppState: TestStringAppState? = null) : StateType
+internal data class TestBlockState(
+    val testAppState: TestAppState? = null,
+    val testStringAppState: TestStringAppState? = null
+) : StateType
 
 internal data class TestCustomAppState(val substate: TestCustomSubstate) : StateType {
     constructor(substateValue: Int = 0) : this(TestCustomSubstate(substateValue))
@@ -101,10 +104,10 @@ internal class TestCustomAppStateReducer {
 }
 
 internal fun blockStateReducer(action: Action, testBlockState: TestBlockState?): TestBlockState =
-        TestBlockState(
-                testAppState = TestReducer().handleAction(action, testBlockState?.testAppState),
-                testStringAppState = TestValueStringReducer().handleAction(action, testBlockState?.testStringAppState)
-        )
+    TestBlockState(
+        testAppState = TestReducer().handleAction(action, testBlockState?.testAppState),
+        testStringAppState = TestValueStringReducer().handleAction(action, testBlockState?.testStringAppState)
+    )
 
 internal class TestStoreSubscriber<T> : StoreSubscriber<T> {
     var recievedStates: MutableList<T> = mutableListOf()
@@ -122,9 +125,9 @@ internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Store
     private val viewC by lazy { ViewSubscriberTypeC() }
 
     override fun newState(state: TestStringAppState) {
-        when(state.testValue){
+        when (state.testValue) {
             "subscribe" -> store.subscribe(viewC)
-            "unsubscribe" ->  store.unsubscribe(viewB)
+            "unsubscribe" -> store.unsubscribe(viewB)
             else -> println(state.testValue)
         }
     }
@@ -162,4 +165,3 @@ internal class CallbackStoreSubscriber<T>(val handler: (T) -> Unit) : StoreSubsc
         handler(state)
     }
 }
-

@@ -26,11 +26,12 @@ import java.util.concurrent.CopyOnWriteArrayList
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class Store<State: StateType> (
-        private val reducer: Reducer<State>,
-        state: State?,
-        middleware: List<Middleware<State>> = emptyList(),
-        automaticallySkipRepeats: Boolean = true): StoreType<State> {
+class Store<State : StateType>(
+    private val reducer: Reducer<State>,
+    state: State?,
+    middleware: List<Middleware<State>> = emptyList(),
+    automaticallySkipRepeats: Boolean = true
+) : StoreType<State> {
 
     private var _state: State? = state
         set(value) {
@@ -45,16 +46,18 @@ class Store<State: StateType> (
         }
 
     override val state: State
-        get() { return _state!! }
+        get() {
+            return _state!!
+        }
 
     @Suppress("NAME_SHADOWING")
     override var dispatchFunction: DispatchFunction = middleware
-            .reversed()
-            .fold({ action: Action -> this._defaultDispatch(action) }, { dispatchFunction, middleware ->
-                val dispatch = { action: Action -> this.dispatch(action) }
-                val getState = { this._state }
-                middleware(dispatch, getState)(dispatchFunction)
-            })
+        .reversed()
+        .fold({ action: Action -> this._defaultDispatch(action) }, { dispatchFunction, middleware ->
+            val dispatch = { action: Action -> this.dispatch(action) }
+            val getState = { this._state }
+            middleware(dispatch, getState)(dispatchFunction)
+        })
 
     val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
 
@@ -69,11 +72,11 @@ class Store<State: StateType> (
         this._state?.let { this._state = state } ?: this.dispatch(ReKotlinInit())
     }
 
-    override fun <S: StoreSubscriber<State>> subscribe(subscriber: S) {
+    override fun <S : StoreSubscriber<State>> subscribe(subscriber: S) {
 
         // if subscribersAutomaticallySkipsRepeat is set
         // skipRepeats will be applied with kotlin structural equality
-        if (subscribersAutomaticallySkipsRepeat){
+        if (subscribersAutomaticallySkipsRepeat) {
             this.subscribe(subscriber) {
                 it.skipRepeats()
             }
@@ -82,11 +85,14 @@ class Store<State: StateType> (
         }
     }
 
-    override fun <SelectedState, S: StoreSubscriber<SelectedState>> subscribe(subscriber: S, transform: ((Subscription<State>) -> Subscription<SelectedState>)?) {
+    override fun <SelectedState, S : StoreSubscriber<SelectedState>> subscribe(
+        subscriber: S,
+        transform: ((Subscription<State>) -> Subscription<SelectedState>)?
+    ) {
         // If the same subscriber is already registered with the store, replace the existing
         // subscription with the new one.
         val index = this.subscriptions.indexOfFirst { it.subscriber === subscriber }
-        if (index != -1){
+        if (index != -1) {
             this.subscriptions.removeAt(index)
         }
 
@@ -109,7 +115,7 @@ class Store<State: StateType> (
 
     override fun <SelectedState> unsubscribe(subscriber: StoreSubscriber<SelectedState>) {
         val index = this.subscriptions.indexOfFirst { it.subscriber === subscriber }
-        if (index != -1){
+        if (index != -1) {
             this.subscriptions.removeAt(index)
         }
     }
@@ -120,10 +126,10 @@ class Store<State: StateType> (
         }
     }
 
-    fun _defaultDispatch(action: Action){
+    fun _defaultDispatch(action: Action) {
         if (isDispatching) {
             throw Exception(
-                    "ReKotlin:ConcurrentMutationError- Action has been dispatched while" +
+                "ReKotlin:ConcurrentMutationError- Action has been dispatched while" +
                     " a previous action is action is being processed. A reducer" +
                     " is dispatching an action, or ReKotlin is used in a concurrent context" +
                     " (e.g. from multiple threads)."
@@ -137,21 +143,24 @@ class Store<State: StateType> (
         this._state = newState
     }
 
-    override fun dispatch(action: Action){
+    override fun dispatch(action: Action) {
         this.dispatchFunction(action)
     }
 
-    override fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>){
+    override fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>) {
         actionCreator(this.state, this)?.let {
             this.dispatch(it)
         }
     }
 
-    override fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>){
+    override fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>) {
         this.dispatch(asyncActionCreator, null)
     }
 
-    override fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>, callback: DispatchCallback<State>?){
+    override fun dispatch(
+        asyncActionCreator: AsyncActionCreator<State, StoreType<State>>,
+        callback: DispatchCallback<State>?
+    ) {
         asyncActionCreator(this.state, this) { actionProvider ->
             val action = actionProvider(this.state, this)
 
