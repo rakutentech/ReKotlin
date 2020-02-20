@@ -1,7 +1,3 @@
-package org.rekotlin
-
-import org.junit.jupiter.api.Test
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -26,6 +22,10 @@ import org.junit.jupiter.api.Test
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package org.rekotlin
+
+import org.junit.jupiter.api.Test
+
 internal class StoreTests {
 
     /**
@@ -40,7 +40,6 @@ internal class StoreTests {
     }
 
     // testDeinit() is not relevant in JVM
-
 }
 
 internal data class CounterState(var count: Int = 0) : StateType

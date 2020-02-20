@@ -1,7 +1,8 @@
 language: java
 jdk:
-- oraclejdk8
+- openjdk8
 before_install:
 - chmod +x gradlew
 script:
 - "./gradlew clean build"
+- if [ TRAVIS_BRANCH == "master" ]; then ./gradlew bintrayUpload; fi

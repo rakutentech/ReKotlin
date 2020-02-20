@@ -27,7 +27,7 @@ package org.rekotlin
  * Stores receive actions and use reducers combined with these actions, to calculate state changes.
  * Upon every state update a store informs all of its subscribers.
  */
-interface StoreType<State: StateType>: DispatchingStoreType {
+interface StoreType<State : StateType> : DispatchingStoreType {
 
     /**
      * The current state stored in the store.
@@ -46,7 +46,7 @@ interface StoreType<State: StateType>: DispatchingStoreType {
      * state in this store changes.
      * @param subscriber: Subscriber that will receive store updates
      */
-    fun <S: StoreSubscriber<State>> subscribe(subscriber: S)
+    fun <S : StoreSubscriber<State>> subscribe(subscriber: S)
 
     /**
      * Subscribes the provided subscriber to this store.
@@ -59,7 +59,10 @@ interface StoreType<State: StateType>: DispatchingStoreType {
      * transformed subscription. Subscriptions can be transformed to only select a subset of the
      * state, or to skip certain state updates.
      */
-    fun <SelectedState, S: StoreSubscriber<SelectedState>> subscribe(subscriber: S, transform: ((Subscription<State>) -> Subscription<SelectedState>)?)
+    fun <SelectedState, S : StoreSubscriber<SelectedState>> subscribe(
+        subscriber: S,
+        transform: ((Subscription<State>) -> Subscription<SelectedState>)?
+    )
 
     /**
      * Unsubscribes the provided subscriber. The subscriber will no longer

@@ -1,8 +1,3 @@
-package org.rekotlin
-
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -27,6 +22,11 @@ import org.junit.jupiter.api.Assertions.*
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package org.rekotlin
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
 internal class StoreSubscriptionTests {
 
     var reducer = TestReducer()
@@ -34,7 +34,7 @@ internal class StoreSubscriptionTests {
 
     // this is not going to work in JVM.
     // WeakReference also can't solve it since gc collects non-deterministically
-    //TODO: Discuss with ReSwift community for this inconsistency
+    // TODO: Discuss with ReSwift community for this inconsistency
     /*
     /**
      * It does not strongly capture an observer
@@ -208,5 +208,33 @@ internal class StoreSubscriptionTests {
 
         store.unsubscribe(blockSubscriptions)
         assertEquals(0, store.subscriptions.count())
+    }
+
+    @Test
+    fun testSubscribeDuringOnNewState() {
+        // setup
+        val reducer = TestValueStringReducer()
+        val store = Store(reducer = reducer::handleAction, state = TestStringAppState())
+
+        val subscribeA = ViewSubscriberTypeA(store)
+        store.subscribe(subscribeA)
+
+        // execute
+        store.dispatch(SetValueStringAction("subscribe"))
+    }
+
+    @Test
+    fun testUnSubscribeDuringOnNewState() {
+        // setup
+        val reducer = TestValueStringReducer()
+        val store = Store(reducer = reducer::handleAction, state = TestStringAppState())
+
+        val subscriberA = ViewSubscriberTypeA(store)
+        val subscriberC = ViewSubscriberTypeC()
+        store.subscribe(subscriberA)
+        store.subscribe(subscriberC)
+
+        // execute
+        store.dispatch(SetValueStringAction("unsubscribe"))
     }
 }

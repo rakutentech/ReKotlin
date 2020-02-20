@@ -32,9 +32,11 @@ package org.rekotlin
  * subscription and passes any values that come through this subscriptions to the subscriber.
  *
  */
-class SubscriptionBox<State, SelectedState>(private val originalSubscription: Subscription<State>,
-                                            transformedSubscription: Subscription<SelectedState>?,
-                                            val subscriber: StoreSubscriber<SelectedState>) where State: StateType {
+class SubscriptionBox<State, SelectedState>(
+    private val originalSubscription: Subscription<State>,
+    transformedSubscription: Subscription<SelectedState>?,
+    val subscriber: StoreSubscriber<SelectedState>
+) where State : StateType {
 
     // hoping to mimic swift weak reference
     // however this doesn't really work the same way, gc collects non-deterministically
@@ -51,7 +53,7 @@ class SubscriptionBox<State, SelectedState>(private val originalSubscription: Su
         // If we haven't received a transformed subscription, we forward all values
         // from the original subscription.
         val forwardFromOriginalSubscription = {
-            // original Swift implementation has type errased subscriber
+            // original Swift implementation has type erased subscriber
             // to avoid casting and passing incompatible value
             // conditional cast was added check
             originalSubscription.observe { _, newState ->
@@ -68,11 +70,10 @@ class SubscriptionBox<State, SelectedState>(private val originalSubscription: Su
             transformedSubscription.observe { _, newState ->
                 this.subscriber.newState(newState)
             }
-
         } ?: forwardFromOriginalSubscription()
     }
 
-    fun newValues(oldState: State?, newState: State){
+    fun newValues(oldState: State?, newState: State) {
         // We pass all new values through the original subscription, which accepts
         // values of type `<State>`. If present, transformed subscriptions will
         // receive this update and transform it before passing it on to the subscriber.
@@ -114,7 +115,6 @@ class Subscription<State> {
                     if (!isRepeat(oldState, newState)) {
                         sink(oldState, newState)
                     }
-
                 } ?: sink(oldState, newState)
             }
         }
@@ -157,12 +157,14 @@ class Subscription<State> {
     // region: Internals
     private var observer: ((State?, State) -> Unit)? = null
 
-    init {}
+    init {
+    }
+
     constructor()
 
-    /// Initializes a subscription with a sink closure. The closure provides a way to send
-    /// new values over this subscription.
-    private constructor(sink: ((State?, State) -> Unit) -> Unit){
+    // / Initializes a subscription with a sink closure. The closure provides a way to send
+    // / new values over this subscription.
+    private constructor(sink: ((State?, State) -> Unit) -> Unit) {
         // Provide the caller with a closure that will forward all values
         // to observers of this subscription.
 
@@ -174,13 +176,13 @@ class Subscription<State> {
     /**
      * Sends new values over this subscription. Observers will be notified of these new values.
      */
-    fun newValues(oldState: State?, newState: State){
+    fun newValues(oldState: State?, newState: State) {
         this.observer?.invoke(oldState, newState)
     }
 
-    /// A caller can observe new values of this subscription through the provided closure.
-    /// - Note: subscriptions only support a single observer.
-    internal fun observe(observer: (State?, State) -> Unit){
+    // / A caller can observe new values of this subscription through the provided closure.
+    // / - Note: subscriptions only support a single observer.
+    internal fun observe(observer: (State?, State) -> Unit) {
         this.observer = observer
     }
 

@@ -171,11 +171,11 @@ This approach involves a lot of manual steps and is thus error prone and doesn't
 
 It also leads to code that is difficult to understand at a glance, since dependencies can be hidden deep inside of view controllers. Lastly, you mostly end up with inconsistent code, where each developer uses the state propagation procedure they personally prefer. You can circumvent this issue by style guides and code reviews but you cannot automatically verify the adherence to these guidelines.
 
-ReKotlin attempts to solve these problem by placing strong constraints on the way applications can be written. This reduces the room for programmer error and leads to applications that can be easily understood - by inspecting the application state data structure, the actions and the reducers.
+ReKotlin attempts to solve these problems by placing strong constraints on the way applications can be written. This reduces the room for programmer error and leads to applications that can be easily understood - by inspecting the application state data structure, the actions and the reducers.
 
 This architecture provides further benefits beyond improving your code base:
 
-- Stores, Reducers, Actions and extensions such as [ReSwift Router](https://github.com/ReKotlin/rekotlin-router)  are entirely platform independent - you can easily use the same business logic and share it between apps for multiple platforms
+- Stores, Reducers, Actions and extensions such as [ReKotlin Router](https://github.com/ReKotlin/rekotlin-router)  are entirely platform independent - you can easily use the same business logic and share it between apps for multiple platforms
 - Want to collaborate with a co-worker on fixing an app crash? Use __(port not yet available)__ [ReSwift Recorder](https://github.com/ReSwift/ReSwift-Recorder) to record the actions that lead up to the crash and send them the JSON file so that they can replay the actions and reproduce the issue right away.
 - Maybe recorded actions can be used to build UI and integration tests?
 
@@ -183,7 +183,7 @@ The ReKotlin tooling is still in a very early stage, but aforementioned prospect
 
 ## Getting Started Guide
 
-Getting started guide has not yet been ported. In the meantime, please refer to original ReSwift's:
+The Getting Started Guide has not yet been ported. In the meantime, please refer to original ReSwift's:
 [Getting Started Guide that describes the core components of apps built with ReSwift](http://reswift.github.io/ReSwift/master/getting-started-guide.html). 
 
 To get an understanding of the core principles we recommend reading the brilliant [redux documentation](http://redux.js.org/).
@@ -192,7 +192,7 @@ To get an understanding of the core principles we recommend reading the brillian
 
 ```gradle
 dependencies {
-    implementation 'org.rekotlin:rekotlin:1.0.0'
+    implementation 'org.rekotlin:rekotlin:1.0.4'
 }
 ```
 
@@ -247,8 +247,20 @@ val store = Store(
 	automaticallySkipRepeats = false)
 ```
 
+### Subscribe/Unsubscribe during `newState`
+
+Under the hood ReKotlin uses a [`CopyOnWriteArrayList`](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CopyOnWriteArrayList.html) to manage subscriptions (see [PR 29](https://github.com/ReKotlin/ReKotlin/pull/29) for more details). This implementation detail means that the number of concurrent writes to the subscriptions should be less than the number of concurrent reads.
+
+In terms of using the library this means that un/subscribing may incur a performance overhead if done during `newState` in store subscribers. We recommend to restrict this usage (concurrent write while reading subscriptions) as much as possible, i.e. avoid `subscribe` or `unsubscribe` in calls to `newState`.
+
+## Contributing
+
+Please format your code using ``kotlinFormatter.xml`` file from [here](Docs/kotlinFormatter.xml) and then running ``./gradlew spotlessApply``
+
+Using this code formatter will help us maintain consistency in code style.
+
 ## Credits
 
-- Many thanks to [Benjamin Encz](https://github.com/Ben-G) and other ReSwift contributors for buidling original [ReSwift](https://github.com/ReSwift/ReSwift) that we really enjoyed working with.
+- Many thanks to [Benjamin Encz](https://github.com/Ben-G) and other ReSwift contributors for building original [ReSwift](https://github.com/ReSwift/ReSwift) that we really enjoyed working with.
 - Also huge thanks to [Dan Abramov](https://github.com/gaearon) for building [Redux](https://github.com/reactjs/redux) - all ideas in here and many implementation details were provided by his library.
 

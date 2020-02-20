@@ -1,8 +1,3 @@
-package org.rekotlin
-
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-
 /**
  * Created by Taras Vozniuk on 10/08/2017.
  * Copyright © 2017 GeoThings. All rights reserved.
@@ -26,6 +21,11 @@ import org.junit.jupiter.api.Test
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+package org.rekotlin
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 internal val firstMiddleware: Middleware<StateType> = { dispatch, getState ->
     { next ->
@@ -92,9 +92,9 @@ internal class StoreMiddlewareTests {
 
         val reducer = TestValueStringReducer()
         val store = Store(
-                reducer = reducer::handleAction,
-                state = TestStringAppState(),
-                middleware = listOf(firstMiddleware, secondMiddleware)
+            reducer = reducer::handleAction,
+            state = TestStringAppState(),
+            middleware = listOf(firstMiddleware, secondMiddleware)
         )
 
         val subscriber = TestStoreSubscriber<TestStringAppState>()
@@ -114,9 +114,9 @@ internal class StoreMiddlewareTests {
 
         val reducer = TestValueStringReducer()
         val store = Store(
-                reducer = reducer::handleAction,
-                state = TestStringAppState(),
-                middleware = listOf(firstMiddleware, secondMiddleware, dispatchingMiddleware)
+            reducer = reducer::handleAction,
+            state = TestStringAppState(),
+            middleware = listOf(firstMiddleware, secondMiddleware, dispatchingMiddleware)
         )
 
         val subscriber = TestStoreSubscriber<TestStringAppState>()
@@ -139,13 +139,12 @@ internal class StoreMiddlewareTests {
         state = state.copy(testValue = "OK")
 
         val store = Store(
-                reducer = reducer::handleAction,
-                state = state,
-                middleware = listOf(stateAccessingMiddleware)
+            reducer = reducer::handleAction,
+            state = state,
+            middleware = listOf(stateAccessingMiddleware)
         )
 
         store.dispatch(SetValueStringAction("Action That Won't Go Through"))
         assertEquals("Not OK", store.state.testValue)
     }
 }
-
