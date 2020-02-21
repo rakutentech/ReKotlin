@@ -42,7 +42,7 @@ internal class StoreTests {
     // testDeinit() is not relevant in JVM
 }
 
-internal data class CounterState(var count: Int = 0) : StateType
+internal data class CounterState(var count: Int = 0) : State
 
 internal class MockReducer {
 

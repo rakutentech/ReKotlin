@@ -26,7 +26,13 @@ import java.util.concurrent.CopyOnWriteArrayList
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class Store<State : StateType>(
+/**
+ * Initial Action that is dispatched as soon as the store is created.
+ * Reducers respond to this action by configuring their initial state.
+ */
+class ReKotlinInit : Action
+
+class Store<State : org.rekotlin.State>(
     private val reducer: Reducer<State>,
     state: State?,
     middleware: List<Middleware<State>> = emptyList(),
@@ -147,33 +153,27 @@ class Store<State : StateType>(
         this.dispatchFunction(action)
     }
 
-    override fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>) {
-        actionCreator(this.state, this)?.let {
-            this.dispatch(it)
-        }
-    }
+//    override fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>) {
+//        actionCreator(this.state, this)?.let {
+//            this.dispatch(it)
+//        }
+//    }
 
-    override fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>) {
-        this.dispatch(asyncActionCreator, null)
-    }
-
-    override fun dispatch(
-        asyncActionCreator: AsyncActionCreator<State, StoreType<State>>,
-        callback: DispatchCallback<State>?
-    ) {
-        asyncActionCreator(this.state, this) { actionProvider ->
-            val action = actionProvider(this.state, this)
-
-            action?.let {
-                this.dispatch(it)
-                callback?.invoke(this.state)
-            }
-        }
-    }
+//    override fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>) {
+//        this.dispatch(asyncActionCreator, null)
+//    }
+//
+//    override fun dispatch(
+//        asyncActionCreator: AsyncActionCreator<State, StoreType<State>>,
+//        callback: DispatchCallback<State>?
+//    ) {
+//        asyncActionCreator(this.state, this) { actionProvider ->
+//            val action = actionProvider(this.state, this)
+//
+//            action?.let {
+//                this.dispatch(it)
+//                callback?.invoke(this.state)
+//            }
+//        }
+//    }
 }
-
-typealias DispatchCallback<State> = (State) -> Unit
-
-typealias ActionCreator<State, Store> = (state: State, store: Store) -> Action?
-
-typealias AsyncActionCreator<State, Store> = (state: State, store: Store, actionCreatorCallback: (ActionCreator<State, Store>) -> Unit) -> Unit

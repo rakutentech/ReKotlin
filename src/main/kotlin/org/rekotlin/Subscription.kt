@@ -36,7 +36,7 @@ class SubscriptionBox<State, SelectedState>(
     private val originalSubscription: Subscription<State>,
     transformedSubscription: Subscription<SelectedState>?,
     val subscriber: StoreSubscriber<SelectedState>
-) where State : StateType {
+) where State : org.rekotlin.State {
 
     // hoping to mimic swift weak reference
     // however this doesn't really work the same way, gc collects non-deterministically
@@ -156,9 +156,6 @@ class Subscription<State> {
 
     // region: Internals
     private var observer: ((State?, State) -> Unit)? = null
-
-    init {
-    }
 
     constructor()
 

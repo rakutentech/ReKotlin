@@ -24,18 +24,18 @@
 
 package org.rekotlin
 
-internal data class TestAppState(val testValue: Int? = null) : StateType
+internal data class TestAppState(val testValue: Int? = null) : State
 
-internal data class TestStringAppState(val testValue: String = "Initial") : StateType
+internal data class TestStringAppState(val testValue: String = "Initial") : State
 
-internal data class TestCustomSubstate(val value: Int) : StateType
+internal data class TestCustomSubstate(val value: Int) : State
 
 internal data class TestBlockState(
     val testAppState: TestAppState? = null,
     val testStringAppState: TestStringAppState? = null
-) : StateType
+) : State
 
-internal data class TestCustomAppState(val substate: TestCustomSubstate) : StateType {
+internal data class TestCustomAppState(val substate: TestCustomSubstate) : State {
     constructor(substateValue: Int = 0) : this(TestCustomSubstate(substateValue))
 }
 
