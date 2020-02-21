@@ -105,7 +105,7 @@ task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
 artifacts {
     archives jar
     archives sourcesJar
-    archives javadocJar
+//    archives javadocJar
 }
 
 publishing {
