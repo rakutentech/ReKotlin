@@ -104,10 +104,6 @@ class Store<State : org.rekotlin.State>(
         }
     }
 
-    // TODO: replace this with varargs unsubscribe
-    fun unsubscribe(blockSubscriptions: BlockSubscriptions) =
-        blockSubscriptions.blockSubscriberList.forEach { unsubscribe(it) }
-
     private fun defaultDispatch(action: Action) {
         this._state = noInterruptions { reducer(action, this._state) }
     }
