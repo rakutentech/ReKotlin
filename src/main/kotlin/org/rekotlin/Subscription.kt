@@ -32,10 +32,10 @@ package org.rekotlin
  * subscription and passes any values that come through this subscriptions to the subscriber.
  *
  */
-class SubscriptionBox<State, SelectedState>(
-    private val originalSubscription: Subscription<State>,
-    transformedSubscription: Subscription<SelectedState>?,
-    val subscriber: StoreSubscriber<SelectedState>
+internal class SubscriptionBox<State, SelectedState>(
+        private val subscription: Subscription<State>,
+        transform: SubscriptionTransform<State, SelectedState>,
+        internal val subscriber: StoreSubscriber<SelectedState>
 ) where State : org.rekotlin.State {
 
     // hoping to mimic swift weak reference
@@ -50,57 +50,65 @@ class SubscriptionBox<State, SelectedState>(
     */
 
     init {
-        // If we haven't received a transformed subscription, we forward all values
-        // from the original subscription.
-        val forwardFromOriginalSubscription = {
-            // original Swift implementation has type erased subscriber
-            // to avoid casting and passing incompatible value
-            // conditional cast was added check
-            originalSubscription.observe { _, newState ->
-                @Suppress("UNCHECKED_CAST")
-                (newState as? SelectedState)?.let {
-                    this.subscriber.newState(it)
-                }
-            }
-        }
-
-        // If we received a transformed subscription, we subscribe to that subscription
-        // and forward all new values to the subscriber.
-        transformedSubscription?.let {
-            transformedSubscription.observe { _, newState ->
-                this.subscriber.newState(newState)
-            }
-        } ?: forwardFromOriginalSubscription()
+        transform(subscription).observe { _, newState -> subscriber.newState(newState) }
     }
 
-    fun newValues(oldState: State?, newState: State) {
+    internal fun newValues(oldState: State?, newState: State) =
         // We pass all new values through the original subscription, which accepts
-        // values of type `<State>`. If present, transformed subscriptions will
-        // receive this update and transform it before passing it on to the subscriber.
-        this.originalSubscription.newValues(oldState, newState)
-    }
+        // values of type `<State>`. It will delegate substate changes to subscribers
+        // of transformed subscriptions.
+        this.subscription.newValues(oldState, newState)
 }
 
 class Subscription<State> {
 
-    @Suppress("FunctionName")
-    private fun <Substate> _select(selector: ((State) -> Substate)): Subscription<Substate> {
-        return Subscription { sink ->
-            this.observe { oldState, newState ->
-                sink(oldState?.let(selector), selector(newState))
-            }
-        }
+    internal constructor()
+
+    // Initializes a subscription with a sink closure. The closure provides a way to send
+    // new values over this subscription.
+    private constructor(sink: ((State?, State) -> Unit) -> Unit) {
+        // Provide the caller with a closure that will forward all values
+        // to observers of this subscription.
+
+        sink { old, new -> newValues(old, new) }
     }
 
-    // region: Public interface
+    @Suppress("FunctionName")
+    private fun <SelectedState> _select(selector: ((State) -> SelectedState)): Subscription<SelectedState> =
+
+        Subscription { selectedStateSink ->
+            /**
+             * this [observe] is in the parent Subscription<State>.
+             * it will pass the selected sub state to the child Subscription<SelectedState>.
+             */
+            this.observe { old, new ->
+                selectedStateSink(old?.let(selector), selector(new))
+            }
+        }
+
+    private var observer: ((old: State?, new: State) -> Unit)? = null
+
+    /**
+     * Sends new values over this subscription. Observers will be notified of these new values.
+     */
+    internal fun newValues(old: State?, new: State) = observer?.invoke(old, new)
+
+
+    // A caller can observe new values of this subscription through the provided closure.
+    // - Note: subscriptions only support a single observer.
+    internal fun observe(observer: (State?, State) -> Unit) {
+        this.observer = observer
+    }
+
+
+    // Public API
 
     /**
      * Provides a subscription that selects a substate of the state of the original subscription.
      * @param selector A closure that maps a state to a selected substate
      */
-    fun <Substate> select(selector: ((State) -> Substate)): Subscription<Substate> {
-        return this._select(selector)
-    }
+    fun <SelectedState> select(selector: ((State) -> SelectedState)): Subscription<SelectedState> =
+        _select(selector)
 
     /**
      * Provides a subscription that skips certain state updates of the original subscription.
@@ -108,37 +116,30 @@ class Subscription<State> {
      * thus should be skipped and not forwarded to subscribers.
      *
      */
-    fun skipRepeats(isRepeat: (oldState: State, newState: State) -> Boolean): Subscription<State> {
-        return Subscription { sink ->
-            this.observe { oldState, newState ->
-                oldState?.let {
-                    if (!isRepeat(oldState, newState)) {
-                        sink(oldState, newState)
-                    }
-                } ?: sink(oldState, newState)
+    fun skipRepeats(isRepeat: (oldState: State, newState: State) -> Boolean): Subscription<State> =
+        Subscription { sink ->
+            observe { old, new ->
+                if (old == null || !isRepeat(old, new)) {
+                    sink(old, new)
+                }
             }
         }
-    }
 
     /**
      * Provides a subscription that skips repeated updates of the original subscription
      * Repeated updates determined by structural equality
      */
-    fun skipRepeats(): Subscription<State> {
-        return this.skipRepeats { oldState, newState ->
-            oldState == newState
-        }
-    }
+    fun skipRepeats(): Subscription<State> = skipRepeats { old, new -> old == new }
 
-    /** Provides a subscription that skips certain state updates of the original subscription.
+    /**
+     * Provides a subscription that skips certain state updates of the original subscription.
      *
      * This is identical to `skipRepeats` and is provided simply for convenience.
      * @param when A closure that determines whether a given state update is a repeat and
      * thus should be skipped and not forwarded to subscribers.
      */
-    fun skip(`when`: (oldState: State, newState: State) -> Boolean): Subscription<State> {
-        return this.skipRepeats(`when`)
-    }
+    fun skip(`when`: (oldState: State, newState: State) -> Boolean): Subscription<State> =
+        skipRepeats(`when`)
 
     /**
      * Provides a subscription that only updates for certain state changes.
@@ -146,42 +147,6 @@ class Subscription<State> {
      * This is effectively the inverse of skipRepeats(:)
      * @param whenBlock A closure that determines whether a given state update should notify
      */
-    fun only(whenBlock: (oldState: State, newState: State) -> Boolean): Subscription<State> {
-        return this.skipRepeats { oldState, newState ->
-            !whenBlock(oldState, newState)
-        }
-    }
-
-    // endregion
-
-    // region: Internals
-    private var observer: ((State?, State) -> Unit)? = null
-
-    constructor()
-
-    // / Initializes a subscription with a sink closure. The closure provides a way to send
-    // / new values over this subscription.
-    private constructor(sink: ((State?, State) -> Unit) -> Unit) {
-        // Provide the caller with a closure that will forward all values
-        // to observers of this subscription.
-
-        sink { old, new ->
-            this.newValues(old, new)
-        }
-    }
-
-    /**
-     * Sends new values over this subscription. Observers will be notified of these new values.
-     */
-    fun newValues(oldState: State?, newState: State) {
-        this.observer?.invoke(oldState, newState)
-    }
-
-    // / A caller can observe new values of this subscription through the provided closure.
-    // / - Note: subscriptions only support a single observer.
-    internal fun observe(observer: (State?, State) -> Unit) {
-        this.observer = observer
-    }
-
-    // endregion
+    fun only(whenBlock: (old: State, new: State) -> Boolean): Subscription<State> =
+        skipRepeats { old, new -> !whenBlock(old, new) }
 }
