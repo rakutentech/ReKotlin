@@ -37,7 +37,7 @@ internal class SubscriberTests {
         val store = Store(::testReducer, TestAppState())
         val subscriber = TestFilteredSubscriber<Int?>()
 
-        store.subscribe(subscriber) { it.select { it.testValue } }
+        store.subscribe(subscriber) { select { testValue } }
 
         store.dispatch(SetValueAction(3))
 
@@ -57,7 +57,7 @@ internal class SubscriberTests {
         val subscriber = TestSelectiveSubscriber()
 
         store.subscribe(subscriber) {
-            it.select { Pair(it.testValue, it.otherState?.name) }
+            select { Pair(testValue, otherState?.name) }
         }
         store.dispatch(SetValueAction(5))
         store.dispatch(SetOtherStateAction(OtherState("TestName", 99)))
@@ -75,8 +75,8 @@ internal class SubscriberTests {
         val subscriber = TestFilteredSubscriber<Int?>()
 
         store.subscribe(subscriber) {
-            it.select {
-                it.testValue
+            select {
+                testValue
             }.skipRepeats { oldState, newState ->
                 oldState == newState
             }
@@ -100,7 +100,7 @@ internal class SubscriberTests {
         val subscriber = TestFilteredSubscriber<String>()
 
         store.subscribe(subscriber) {
-            it.select { it.testValue }.skipRepeats()
+            select { testValue }.skipRepeats()
         }
 
         assertEquals("Initial", subscriber.recievedValue)
@@ -121,7 +121,7 @@ internal class SubscriberTests {
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
         store.subscribe(subscriber) {
-            it.select { it.substate }
+            select { substate }
                 .skipRepeats { oldState, newState -> oldState.value == newState.value }
         }
 
@@ -139,7 +139,7 @@ internal class SubscriberTests {
         val subscriber = TestFilteredSubscriber<String>()
 
         store.subscribe(subscriber) {
-            it.select { it.testValue }
+            select { testValue }
         }
 
         assertEquals("Initial", subscriber.recievedValue)
@@ -187,7 +187,7 @@ internal class SubscriberTests {
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
         store.subscribe(subscriber) {
-            it.select { it.substate }
+            select { substate }
                 .skip { oldState, newState -> oldState.value == newState.value }
         }
 
@@ -206,7 +206,7 @@ internal class SubscriberTests {
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
         store.subscribe(subscriber) {
-            it.select { it.substate }
+            select { substate }
                 .only { oldState, newState -> oldState.value != newState.value }
         }
 

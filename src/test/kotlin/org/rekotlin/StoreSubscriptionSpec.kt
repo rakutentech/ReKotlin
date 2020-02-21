@@ -91,7 +91,7 @@ internal class StoreSubscriptionTests {
         // initial subscription
         store.subscribe(subscriber)
         // Subsequent subscription that skips repeated updates.
-        store.subscribe(subscriber) { it.skipRepeats { oldState, newState -> oldState.testValue == newState.testValue } }
+        store.subscribe(subscriber) { skipRepeats { oldState, newState -> oldState.testValue == newState.testValue } }
 
         // One initial state update for every subscription.
         assertEquals(2, subscriber.receivedStates.count())
@@ -181,8 +181,8 @@ internal class StoreSubscriptionTests {
         val store = Store(::testReducer, TestAppState())
         val subscriber = TestStoreSubscriber<TestAppState>()
 
-        store.subscribe(subscriber) { it }
-        store.subscribe(subscriber) { it }
+        store.subscribe(subscriber) { this }
+        store.subscribe(subscriber) { this }
 
         assertEquals(1, store.subscriptions.count())
     }

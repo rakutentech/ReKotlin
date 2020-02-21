@@ -22,18 +22,30 @@ package org.rekotlin
  */
 
 /**
- * All actions that want to be able to be dispatched to a store need to conform to this protocol
- * Currently it is just a marker protocol with no requirements.
+ * Marker interface for actions dispatched to a [Store].
+ *
+ * Actions initiate state changes in the store, once the state change all subscribes of the store
+ * will be notified with the new, changed state.
+ *
+ * All actions need to be marked with this interface.
  */
 interface Action
 
+/**
+ * Marker interface for effects dispatched to a [Store].
+ *
+ * Effects are ephemeral, they do not change the store's state, however listeners can react to them.
+ * Effects are a concept with ephemeral application behavior in mind, such as triggering an
+ * animation, showing a toast or showing a snackbar.
+ *
+ * All effects need to be marked with this interface.
+ */
 interface Effect
 
 /**
  * Marker Interface for states managed by the store.
- * TODO: do we really need a marker interface?
  */
-interface State
+interface State // TODO: do we really need a marker interface?
 
 typealias Reducer<State> = (action: Action, state: State?) -> State
 
@@ -41,12 +53,29 @@ typealias DispatchAction = (Action) -> Unit
 
 typealias DispatchEffect = (Effect) -> Unit
 
+/**
+ * A middleware that can intercept actions that are dispatched to the store before they reach the reducers.
+ *
+ * Middlewares have access to the previous state, can drop actions or dispatch others (potentially
+ * multiple others. This makes middlewares very powerful. Any middleware will affect all actions
+ * dispatched to the store, so use them for cross-cutting concerns only.
+ */
 typealias Middleware<State> = (DispatchAction, () -> State?) -> (DispatchAction) -> DispatchAction
 
+/**
+ * A state subscriber, waiting for state changes.
+ *
+ * Subscribe to the [Store] via [Store.subscribe].
+ */
 interface Subscriber<State> {
     fun newState(state: State)
 }
 
+/**
+ * An effect listener, waiting for effects dispatched through the store.
+ *
+ * Subscribe to the [Store] via [Store.subscribe].
+ */
 interface Listener<Effect> {
     fun onEffect(effect: Effect)
 }
@@ -125,7 +154,7 @@ interface StoreType<State : org.rekotlin.State> {
      */
     fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
             subscriber: S,
-            selector: (Subscription<State>) -> Subscription<SelectedState>
+            selector: Subscription<State>.() -> Subscription<SelectedState>
     )
 
     /**

@@ -82,7 +82,7 @@ class Store<State : org.rekotlin.State>(
     // TODO: add subscription as receiver for transform to make for fluent API
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
             subscriber: S,
-            selector: (Subscription<State>) -> Subscription<SelectedState>
+            selector: Subscription<State>.() -> Subscription<SelectedState>
     ) {
         unsubscribe(subscriber)
 
