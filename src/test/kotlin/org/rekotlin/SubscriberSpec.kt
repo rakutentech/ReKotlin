@@ -34,8 +34,7 @@ internal class SubscriberTests {
      */
     @Test
     fun testAllowsSelectorClosure() {
-        val reducer = TestReducer()
-        val store = Store(reducer = reducer::handleAction, state = TestAppState())
+        val store = Store(::testReducer, TestAppState())
         val subscriber = TestFilteredSubscriber<Int?>()
 
         store.subscribe(subscriber) { it.select { it.testValue } }
@@ -72,9 +71,7 @@ internal class SubscriberTests {
      */
     @Test
     fun testUnchangedStateSelector() {
-        val reducer = TestReducer()
-        val state = TestAppState(3)
-        val store = Store(reducer = reducer::handleAction, state = state)
+        val store = Store(::testReducer, TestAppState(3))
         val subscriber = TestFilteredSubscriber<Int?>()
 
         store.subscribe(subscriber) {
@@ -99,9 +96,7 @@ internal class SubscriberTests {
      */
     @Test
     fun testUnchangedStateSelectorDefaultSkipRepeats() {
-        val reducer = TestValueStringReducer()
-        val state = TestStringAppState()
-        val store = Store(reducer::handleAction, state)
+        val store = Store(::stringStateReducer, TestStringAppState())
         val subscriber = TestFilteredSubscriber<String>()
 
         store.subscribe(subscriber) {
@@ -121,9 +116,8 @@ internal class SubscriberTests {
      */
     @Test
     fun testSkipsStateUpdatesForCustomEqualityChecks() {
-        val reducer = TestCustomAppStateReducer()
         val state = TestCustomAppState(5)
-        val store = Store(reducer::handleAction, state)
+        val store = Store(::customAppStateReducer, state)
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
         store.subscribe(subscriber) {
@@ -141,9 +135,7 @@ internal class SubscriberTests {
 
     @Test
     fun testPassesOnDuplicateSubstateUpdatesByDefault() {
-        val reducer = TestValueStringReducer()
-        val state = TestStringAppState()
-        val store = Store(reducer::handleAction, state)
+        val store = Store(::stringStateReducer, TestStringAppState())
         val subscriber = TestFilteredSubscriber<String>()
 
         store.subscribe(subscriber) {
@@ -160,9 +152,7 @@ internal class SubscriberTests {
 
     @Test
     fun testSkipsStateUpdatesForEquatableStateByDefault() {
-        val reducer = TestValueStringReducer()
-        val state = TestStringAppState()
-        val store = Store(reducer::handleAction, state)
+        val store = Store(::stringStateReducer, TestStringAppState())
         val subscriber = TestFilteredSubscriber<TestStringAppState>()
 
         store.subscribe(subscriber)
@@ -177,9 +167,7 @@ internal class SubscriberTests {
 
     @Test
     fun testPassesOnDuplicateStateUpdatesInCustomizedStore() {
-        val reducer = TestValueStringReducer()
-        val state = TestStringAppState()
-        val store = Store(reducer::handleAction, state, skipRepeats = false)
+        val store = Store(::stringStateReducer, TestStringAppState(), skipRepeats = false)
         val subscriber = TestFilteredSubscriber<TestStringAppState>()
 
         store.subscribe(subscriber)
@@ -194,9 +182,8 @@ internal class SubscriberTests {
 
     @Test
     fun testSkipWhen() {
-        val reducer = TestCustomAppStateReducer()
         val state = TestCustomAppState(5)
-        val store = Store(reducer::handleAction, state)
+        val store = Store(::customAppStateReducer, state)
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
         store.subscribe(subscriber) {
@@ -214,9 +201,8 @@ internal class SubscriberTests {
 
     @Test
     fun testOnlyWhen() {
-        val reducer = TestCustomAppStateReducer()
         val state = TestCustomAppState(5)
-        val store = Store(reducer::handleAction, state)
+        val store = Store(::customAppStateReducer, state)
         val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
 
         store.subscribe(subscriber) {

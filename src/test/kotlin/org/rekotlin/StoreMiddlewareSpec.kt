@@ -90,9 +90,8 @@ internal class StoreMiddlewareTests {
     @Test
     fun testDecorateDispatch() {
 
-        val reducer = TestValueStringReducer()
         val store = Store(
-            reducer = reducer::handleAction,
+            reducer = ::stringStateReducer,
             state = TestStringAppState(),
             middleware = listOf(firstMiddleware, secondMiddleware)
         )
@@ -112,9 +111,8 @@ internal class StoreMiddlewareTests {
     @Test
     fun testCanDispatch() {
 
-        val reducer = TestValueStringReducer()
         val store = Store(
-            reducer = reducer::handleAction,
+            reducer = ::stringStateReducer,
             state = TestStringAppState(),
             middleware = listOf(firstMiddleware, secondMiddleware, dispatchingMiddleware)
         )
@@ -134,12 +132,11 @@ internal class StoreMiddlewareTests {
     @Test
     fun testMiddlewareCanAccessState() {
 
-        val reducer = TestValueStringReducer()
         var state = TestStringAppState()
         state = state.copy(testValue = "OK")
 
         val store = Store(
-            reducer = reducer::handleAction,
+            reducer = ::stringStateReducer,
             state = state,
             middleware = listOf(stateAccessingMiddleware)
         )
