@@ -34,42 +34,29 @@ package org.rekotlin
  */
 internal class SubscriptionBox<State, SelectedState>(
         private val subscription: Subscription<State>,
-        transform: SubscriptionTransform<State, SelectedState>,
-        internal val subscriber: StoreSubscriber<SelectedState>
+        transform: (Subscription<State>) -> Subscription<SelectedState>,
+//        transform: SubscriptionTransform<State, SelectedState>,
+        internal val subscriber: Subscriber<SelectedState>
 ) where State : org.rekotlin.State {
-
-    // hoping to mimic swift weak reference
-    // however this doesn't really work the same way, gc collects non-deterministically
-    // setting the original subscriber to null will not result in this being nulled synchronously
-    /*
-    var _subscriber: WeakReference<StoreSubscriber<SelectedState>> = WeakReference(subscriber)
-    val subscriber: StoreSubscriber<SelectedState>?
-        get() {
-            return _subscriber.get()
-        }
-    */
-
     init {
         transform(subscription).observe { _, newState -> subscriber.newState(newState) }
     }
 
-    internal fun newValues(oldState: State?, newState: State) =
-        // We pass all new values through the original subscription, which accepts
-        // values of type `<State>`. It will delegate substate changes to subscribers
-        // of transformed subscriptions.
-        this.subscription.newValues(oldState, newState)
+    internal fun newValues(old: State?, new: State) = subscription.newValues(old, new)
 }
 
 class Subscription<State> {
 
     internal constructor()
 
-    // Initializes a subscription with a sink closure. The closure provides a way to send
-    // new values over this subscription.
+    /**
+     * Initializes a subscription with a closure.
+     *
+     * The closure provides a way to send new values over this subscription.
+     *
+     * @param sink a closure that will forward all values to observers of this subscription.
+     */
     private constructor(sink: ((State?, State) -> Unit) -> Unit) {
-        // Provide the caller with a closure that will forward all values
-        // to observers of this subscription.
-
         sink { old, new -> newValues(old, new) }
     }
 

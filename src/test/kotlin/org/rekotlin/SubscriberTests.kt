@@ -27,7 +27,7 @@ package org.rekotlin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class StoreSubscriberTests {
+internal class SubscriberTests {
 
     /**
      * it allows to pass a state selector closure
@@ -234,7 +234,7 @@ internal class StoreSubscriberTests {
     }
 }
 
-internal class TestFilteredSubscriber<T> : StoreSubscriber<T> {
+internal class TestFilteredSubscriber<T> : Subscriber<T> {
     var recievedValue: T? = null
     var newStateCallCount = 0
 
@@ -248,7 +248,7 @@ internal class TestFilteredSubscriber<T> : StoreSubscriber<T> {
  * Example of how you can select a substate. The return value from
  *`selectSubstate` and the argument for `newState` need to match up.
  */
-class TestSelectiveSubscriber : StoreSubscriber<Pair<Int?, String?>> {
+class TestSelectiveSubscriber : Subscriber<Pair<Int?, String?>> {
     var recievedValue: Pair<Int?, String?> = Pair(null, null)
 
     override fun newState(state: Pair<Int?, String?>) {

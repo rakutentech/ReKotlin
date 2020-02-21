@@ -109,7 +109,7 @@ internal fun blockStateReducer(action: Action, testBlockState: TestBlockState?):
         testStringAppState = TestValueStringReducer().handleAction(action, testBlockState?.testStringAppState)
     )
 
-internal class TestStoreSubscriber<T> : StoreSubscriber<T> {
+internal class TestStoreSubscriber<T> : Subscriber<T> {
     var recievedStates: MutableList<T> = mutableListOf()
 
     override fun newState(state: T) {
@@ -118,9 +118,9 @@ internal class TestStoreSubscriber<T> : StoreSubscriber<T> {
 }
 
 /**
- * A subscriber contains another sub-subscribers [StoreSubscriber], which could be subscribe/unsubscribe at some point
+ * A subscriber contains another sub-subscribers [Subscriber], which could be subscribe/unsubscribe at some point
  */
-internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : StoreSubscriber<TestStringAppState> {
+internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
     private val viewB by lazy { ViewSubscriberTypeB(store) }
     private val viewC by lazy { ViewSubscriberTypeC() }
 
@@ -133,7 +133,7 @@ internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Store
     }
 }
 
-internal class ViewSubscriberTypeB(store: Store<TestStringAppState>) : StoreSubscriber<TestStringAppState> {
+internal class ViewSubscriberTypeB(store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
     init {
         store.subscribe(this)
     }
@@ -143,13 +143,13 @@ internal class ViewSubscriberTypeB(store: Store<TestStringAppState>) : StoreSubs
     }
 }
 
-internal class ViewSubscriberTypeC : StoreSubscriber<TestStringAppState> {
+internal class ViewSubscriberTypeC : Subscriber<TestStringAppState> {
     override fun newState(state: TestStringAppState) {
         // do nothing
     }
 }
 
-internal class DispatchingSubscriber(var store: Store<TestAppState>) : StoreSubscriber<TestAppState> {
+internal class DispatchingSubscriber(var store: Store<TestAppState>) : Subscriber<TestAppState> {
 
     override fun newState(state: TestAppState) {
         // Test if we've already dispatched this action to
@@ -160,7 +160,7 @@ internal class DispatchingSubscriber(var store: Store<TestAppState>) : StoreSubs
     }
 }
 
-internal class CallbackStoreSubscriber<T>(val handler: (T) -> Unit) : StoreSubscriber<T> {
+internal class CallbackStoreSubscriber<T>(val handler: (T) -> Unit) : Subscriber<T> {
     override fun newState(state: T) {
         handler(state)
     }

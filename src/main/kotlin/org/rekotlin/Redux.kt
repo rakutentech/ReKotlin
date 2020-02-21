@@ -27,28 +27,28 @@ package org.rekotlin
  */
 interface Action
 
+interface Effect
+
 /**
  * Marker Interface for states managed by the store.
  * TODO: do we really need a marker interface?
  */
 interface State
 
-typealias SubscriptionTransform<Old, New> = (Subscription<Old>) -> Subscription<New>
-
 typealias Reducer<State> = (action: Action, state: State?) -> State
 
-typealias DispatchFunction = (Action) -> Unit
+typealias DispatchAction = (Action) -> Unit
 
-typealias Middleware<State> = (DispatchFunction, () -> State?) -> (DispatchFunction) -> DispatchFunction
+typealias DispatchEffect = (Effect) -> Unit
 
-//typealias DispatchCallback<State> = (State) -> Unit
+typealias Middleware<State> = (DispatchAction, () -> State?) -> (DispatchAction) -> DispatchAction
 
-//typealias ActionCreator<State, Store> = (state: State, store: Store) -> Action?
+interface Subscriber<State> {
+    fun newState(state: State)
+}
 
-//typealias AsyncActionCreator<State, Store> = (state: State, store: Store, actionCreatorCallback: (ActionCreator<State, Store>) -> Unit) -> Unit
-
-interface StoreSubscriber<StoreSubscriberStateType> {
-    fun newState(state: StoreSubscriberStateType)
+interface Listener<Effect> {
+    fun onEffect(effect: Effect)
 }
 
 /**
@@ -60,7 +60,16 @@ interface StoreSubscriber<StoreSubscriberStateType> {
 interface StoreType<State : org.rekotlin.State> {
 
     /**
-     * Dispatches an action. This is the simplest way to modify the stores state.
+     * The current state stored in the store.
+     */
+    val state: State
+
+    /**
+     * Dispatch an action - the simplest way to initiate state changes.
+     *
+     * This passes the action to middlewares, delegates to the reducer to determine the new state
+     * and eventually notifies subscribers of (sub-)state changes (if any).
+     *
      *
      * Example of dispatching an action:
      * <pre>
@@ -69,107 +78,90 @@ interface StoreType<State : org.rekotlin.State> {
      * </code>
      * </pre>
      *
-     * @param action The action that is being dispatched to the store
-     * @return By default returns the dispatched action, but middlewares can change the type, e.g. to return promises
+     * @param action The action to dispatch to the store
      */
     fun dispatch(action: Action)
 
     /**
-     * The current state stored in the store.
+     * Dispatch A one time effect that does not change the state.
+     *
+     * This notifies all subscribers to effects.
+     *
+     * This <b>will not</b> pass anything to middlewares, delegate to reducers or change state.
      */
-    val state: State
+    fun dispatch(effect: Effect)
 
     /**
-     * The main dispatch function that is used by all convenience `dispatch` methods.
-     * This dispatch function can be extended by providing middlewares.
+     * The dispatch function used to dispatch [Action]s.
+     * Use the property if you want to use only a dispatch function and not the full store, for
+     * example for dependency injection.
      */
-    val dispatchFunction: DispatchFunction
+    val dispatchAction: DispatchAction
 
     /**
-     * Subscribes the provided subscriber to this store.
-     * Subscribers will receive a call to `newState` whenever the
-     * state in this store changes.
-     * @param subscriber: Subscriber that will receive store updates
+     * The dispatch function used to dispatch [Effects]s.
+     * Use the property if you want to use only a dispatch function and not the full store, for
+     * example for dependency injection.
      */
-    fun <S : StoreSubscriber<State>> subscribe(subscriber: S)
+    val dispatchEffect: DispatchEffect
 
     /**
-     * Subscribes the provided subscriber to this store.
-     * Subscribers will receive a call to `newState` whenever the
-     * state in this store changes and the subscription decides to forward
-     * state update.
+     * Subscribes the state changes of this store.
+     * Subscribers will receive a call to [Subscriber.newState] whenever the state changes.
+     *
+     * @param subscriber: [Subscriber] that will receive store updates
+     */
+    fun <S : Subscriber<State>> subscribe(subscriber: S)
+
+    /**
+     * Subscribe a subscriber to this store.
+     *
+     * Subscribers will receive a call to [Subscriber.newState] whenever the state changes and
+     * the [selector] decides to forward the state update.
      *
      * @param subscriber Subscriber that will receive store updates
-     * @param transform A closure that receives a simple subscription and can return a
-     * transformed subscription. Subscriptions can be transformed to only select a subset of the
-     * state, or to skip certain state updates.
+     * @param selector A closure that receives a [Subscription] and can transform it by selecting
+     * sub-states or skipping updates conditionally.
      */
-    fun <SelectedState, S : StoreSubscriber<SelectedState>> subscribe(
+    fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
             subscriber: S,
-            transform: SubscriptionTransform<State, SelectedState>
+            selector: (Subscription<State>) -> Subscription<SelectedState>
     )
 
     /**
-     * Unsubscribes the provided subscriber. The subscriber will no longer
-     * receive state updates from this store.
+     * Unsubscribe a subscriber.
      *
-     * @param subscriber Subscriber that will be unsubscribed
+     * The subscriber will no longer receive updates from this store.
+     *
+     * @param subscriber: [Subscriber] that will be unsubscribed
      */
-    fun <SelectedState> unsubscribe(subscriber: StoreSubscriber<SelectedState>)
+    fun <SelectedState> unsubscribe(subscriber: Subscriber<SelectedState>)
 
-//    /**
-//     * Dispatches an action creator to the store. Action creators are functions that generate
-//     * actions. They are called by the store and receive the current state of the application
-//     * and a reference to the store as their input.
-//     *
-//     * Based on that input the action creator can either return an action or not. Alternatively
-//     * the action creator can also perform an asynchronous operation and dispatch a new action
-//     * at the end of it.
-//     *
-//     * Example of an action creator:
-//     * <pre>
-//     * <code>
-//     * func deleteNote(noteID: Int) -> ActionCreator {
-//     *     return { state, store in
-//     *         // only delete note if editing is enabled
-//     *         if (state.editingEnabled == true) {
-//     *             return NoteDataAction.DeleteNote(noteID)
-//     *         } else {
-//     *             return nil
-//     *         }
-//     *      }
-//     * }
-//     * </code>
-//     * </pre>
-//     *
-//     * This action creator can then be dispatched as following:
-//     * <pre>
-//     * <code>
-//     * store.dispatch( noteActionCreatore.deleteNote(3) )
-//     * </code>
-//     * </pre>
-//     *
-//     * @return: By default returns the dispatched action, but middlewares can change the
-//     * return type, e.g. to return promises
-//     */
-//    fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>)
+    /**
+     * Subscribe to all effects dispatched to this store.
+     * Listeners will receive a call to [Listener.onEffect] whenever an effect is dispatched
+     *
+     * @param listener: the [Listener] that will receive effects
+     */
+    fun subscribe(listener: Listener<Effect>)
 
-//    /**
-//     * Dispatches an async action creator to the store. An async action creator generates an
-//     * action creator asynchronously.
-//     */
-//    fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>)
-//
-//    /**
-//     * Dispatches an async action creator to the store. An async action creator generates an
-//     * action creator asynchronously. Use this method if you want to wait for the state change
-//     * triggered by the asynchronously generated action creator.
-//     *
-//     * This overloaded version of `dispatch` calls the provided `callback` as soon as the
-//     * asynchronoously dispatched action has caused a new state calculation.
-//     *
-//     * If the ActionCreator does not dispatch an action, the callback block will never
-//     * be called
-//     */
-//    fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>, callback: DispatchCallback<State>?)
+    /**
+     * Subscribe to selected effects dispatched to this store.
+     * Listeners will receive a call to [Listener.onEffect] whenever an effect is dispatched and
+     * the [selector] converts it into a non-null value.
+     *
+     * @param listener: the [Listener] that will receive effects
+     * @param selector: selector closure that selects a subset of effects from all effects
+     * dispatched to this store
+     */
+    fun <E: Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?)
+
+    /**
+     * Unsubscribe a listener.
+     *
+     * The listener will no longer receive effects.
+     *
+     * @param listener: [Listener] that will be unsubscribed
+     */
+    fun <E: Effect> unsubscribe(listener: Listener<E>)
 }

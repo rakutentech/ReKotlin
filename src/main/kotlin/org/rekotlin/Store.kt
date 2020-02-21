@@ -57,13 +57,15 @@ class Store<State : org.rekotlin.State>(
         }
 
     @Suppress("NAME_SHADOWING")
-    override val dispatchFunction: DispatchFunction = middleware
+    override val dispatchAction: DispatchAction = middleware
         .reversed()
-            .fold(this::defaultDispatch as DispatchFunction,
+            .fold(this::defaultDispatch as DispatchAction,
                     { dispatch, middleware -> middleware(this::dispatch, this::state )(dispatch) })
 
     // TODO: make this private?
     internal val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
+
+    internal val listeners: MutableList<ListenerBox<*>> = CopyOnWriteArrayList()
 
     init {
         if (state != null) {
@@ -73,23 +75,18 @@ class Store<State : org.rekotlin.State>(
         }
     }
 
-    override fun <S : StoreSubscriber<State>> subscribe(subscriber: S) {
-        this.subscribe(subscriber, if (skipRepeats) ::skipRepeatsTransform else ::identity)
+    override fun <S : Subscriber<State>> subscribe(subscriber: S) {
+        this.subscribe(subscriber, if (skipRepeats) ::skipRepeatsTransform else ::stateIdentity)
     }
 
     // TODO: add subscription as receiver for transform to make for fluent API
-    override fun <SelectedState, S : StoreSubscriber<SelectedState>> subscribe(
-        subscriber: S,
-        transform: SubscriptionTransform<State, SelectedState>
+    override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
+            subscriber: S,
+            selector: (Subscription<State>) -> Subscription<SelectedState>
     ) {
-        // If the same subscriber is already registered with the store, replace the existing
-        // subscription with the new one.
-        val index = this.subscriptions.indexOfFirst { it.subscriber === subscriber }
-        if (index != -1) {
-            this.subscriptions.removeAt(index)
-        }
+        unsubscribe(subscriber)
 
-        val box = SubscriptionBox(Subscription(), transform, subscriber)
+        val box = SubscriptionBox(Subscription(), selector, subscriber)
 
         // each subscriber has its own potentially different SelectedState that doesn't have to conform to StateType
         @Suppress("UNCHECKED_CAST")
@@ -100,7 +97,7 @@ class Store<State : org.rekotlin.State>(
         }
     }
 
-    override fun <SelectedState> unsubscribe(subscriber: StoreSubscriber<SelectedState>) {
+    override fun <SelectedState> unsubscribe(subscriber: Subscriber<SelectedState>) {
         val index = this.subscriptions.indexOfFirst { it.subscriber === subscriber }
         if (index != -1) {
             this.subscriptions.removeAt(index)
@@ -112,7 +109,6 @@ class Store<State : org.rekotlin.State>(
         blockSubscriptions.blockSubscriberList.forEach { unsubscribe(it) }
 
     private fun defaultDispatch(action: Action) {
-
         this._state = noInterruptions { reducer(action, this._state) }
     }
 
@@ -133,35 +129,44 @@ class Store<State : org.rekotlin.State>(
         this.isDispatching = false
 
         return newState
-
     }
 
-    override fun dispatch(action: Action) = dispatchFunction(action)
+    override fun dispatch(action: Action) = dispatchAction(action)
 
-//    override fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>) {
-//        actionCreator(this.state, this)?.let {
-//            this.dispatch(it)
-//        }
-//    }
+    // effects
 
-//    override fun dispatch(asyncActionCreator: AsyncActionCreator<State, StoreType<State>>) {
-//        this.dispatch(asyncActionCreator, null)
-//    }
-//
-//    override fun dispatch(
-//        asyncActionCreator: AsyncActionCreator<State, StoreType<State>>,
-//        callback: DispatchCallback<State>?
-//    ) {
-//        asyncActionCreator(this.state, this) { actionProvider ->
-//            val action = actionProvider(this.state, this)
-//
-//            action?.let {
-//                this.dispatch(it)
-//                callback?.invoke(this.state)
-//            }
-//        }
-//    }
+    override fun dispatch(effect: Effect) = dispatchEffect(effect)
+
+    override val dispatchEffect: DispatchEffect = { effect ->
+            listeners.forEach { it.onEffect(effect) }
+        }
+
+    override fun subscribe(listener: Listener<Effect>) = subscribe(listener, ::effectIdentity)
+
+    override fun <E : Effect> unsubscribe(listener: Listener<E>) {
+        val index = this.listeners.indexOfFirst { it.listener === listener }
+        if (index != -1) {
+            this.listeners.removeAt(index)
+        }
+    }
+
+    override fun <E : Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?) {
+        unsubscribe(listener)
+
+        listeners.add(ListenerBox(listener, selector))
+    }
+
 }
 
-internal fun <T: State> skipRepeatsTransform(sub: Subscription<T>) = sub.skipRepeats()
-internal fun <T: State> identity(sub: Subscription<T>) = sub
+internal class ListenerBox<E: Effect>(
+        val listener: Listener<E>,
+        private val selector: (Effect) -> E?
+): Listener<Effect> {
+    override fun onEffect(effect: Effect) {
+        selector(effect)?.let { listener.onEffect(it) }
+    }
+}
+
+private fun <T: State> skipRepeatsTransform(sub: Subscription<T>) = sub.skipRepeats()
+private fun <T: State> stateIdentity(sub: Subscription<T>) = sub
+private fun <T: Effect> effectIdentity(effect: T) = effect
