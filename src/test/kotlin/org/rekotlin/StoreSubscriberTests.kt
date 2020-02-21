@@ -38,9 +38,7 @@ internal class StoreSubscriberTests {
         val store = Store(reducer = reducer::handleAction, state = TestAppState())
         val subscriber = TestFilteredSubscriber<Int?>()
 
-        store.subscribe(subscriber) {
-            it.select { it.testValue }
-        }
+        store.subscribe(subscriber) { it.select { it.testValue } }
 
         store.dispatch(SetValueAction(3))
 
@@ -182,7 +180,7 @@ internal class StoreSubscriberTests {
     fun testPassesOnDuplicateStateUpdatesInCustomizedStore() {
         val reducer = TestValueStringReducer()
         val state = TestStringAppState()
-        val store = Store(reducer::handleAction, state, automaticallySkipRepeats = false)
+        val store = Store(reducer::handleAction, state, skipRepeats = false)
         val subscriber = TestFilteredSubscriber<TestStringAppState>()
 
         store.subscribe(subscriber)

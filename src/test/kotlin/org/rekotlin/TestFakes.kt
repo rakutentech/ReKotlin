@@ -128,7 +128,7 @@ internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Store
         when (state.testValue) {
             "subscribe" -> store.subscribe(viewC)
             "unsubscribe" -> store.unsubscribe(viewB)
-            else -> println(state.testValue)
+            else -> Unit // println(state.testValue)
         }
     }
 }

@@ -36,7 +36,7 @@ class Store<State : org.rekotlin.State>(
     private val reducer: Reducer<State>,
     state: State?,
     middleware: List<Middleware<State>> = emptyList(),
-    automaticallySkipRepeats: Boolean = true
+    private val skipRepeats: Boolean = true
 ) : StoreType<State> {
 
     private var _state: State? = state
@@ -57,43 +57,30 @@ class Store<State : org.rekotlin.State>(
         }
 
     @Suppress("NAME_SHADOWING")
-    override var dispatchFunction: DispatchFunction = middleware
+    override val dispatchFunction: DispatchFunction = middleware
         .reversed()
-        .fold({ action: Action -> this._defaultDispatch(action) }, { dispatchFunction, middleware ->
-            val dispatch = { action: Action -> this.dispatch(action) }
-            val getState = { this._state }
-            middleware(dispatch, getState)(dispatchFunction)
-        })
+            .fold(this::defaultDispatch as DispatchFunction,
+                    { dispatch, middleware -> middleware(this::dispatch, this::state )(dispatch) })
 
-    val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
-
-    private var isDispatching = false
-
-    /**
-     * Indicates if new subscriptions attempt to apply `skipRepeats` by default.
-     */
-    val subscribersAutomaticallySkipsRepeat: Boolean = automaticallySkipRepeats
+    // TODO: make this private?
+    internal val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
 
     init {
-        this._state?.let { this._state = state } ?: this.dispatch(ReKotlinInit())
-    }
-
-    override fun <S : StoreSubscriber<State>> subscribe(subscriber: S) {
-
-        // if subscribersAutomaticallySkipsRepeat is set
-        // skipRepeats will be applied with kotlin structural equality
-        if (subscribersAutomaticallySkipsRepeat) {
-            this.subscribe(subscriber) {
-                it.skipRepeats()
-            }
+        if (state != null) {
+            this._state = state
         } else {
-            this.subscribe(subscriber, null)
+            this.dispatch(ReKotlinInit())
         }
     }
 
+    override fun <S : StoreSubscriber<State>> subscribe(subscriber: S) {
+        this.subscribe(subscriber, if (skipRepeats) ::skipRepeatsTransform else ::identity)
+    }
+
+    // TODO: add subscription as receiver for transform to make for fluent API
     override fun <SelectedState, S : StoreSubscriber<SelectedState>> subscribe(
         subscriber: S,
-        transform: ((Subscription<State>) -> Subscription<SelectedState>)?
+        transform: SubscriptionTransform<State, SelectedState>
     ) {
         // If the same subscriber is already registered with the store, replace the existing
         // subscription with the new one.
@@ -102,20 +89,14 @@ class Store<State : org.rekotlin.State>(
             this.subscriptions.removeAt(index)
         }
 
-        // Create a subscription for the new subscriber.
-        val originalSubscription = Subscription<State>()
-        // Call the optional transformation closure. This allows callers to modify
-        // the subscription, e.g. in order to subselect parts of the store's state.
-        val transformedSubscription = transform?.invoke(originalSubscription)
-
-        val subscriptionBox = SubscriptionBox(originalSubscription, transformedSubscription, subscriber)
+        val box = SubscriptionBox(Subscription(), transform, subscriber)
 
         // each subscriber has its own potentially different SelectedState that doesn't have to conform to StateType
         @Suppress("UNCHECKED_CAST")
-        this.subscriptions.add(subscriptionBox as SubscriptionBox<State, Any>)
+        this.subscriptions.add(box as SubscriptionBox<State, Any>)
 
         this._state?.let {
-            originalSubscription.newValues(null, it)
+            box.newValues(null, it)
         }
     }
 
@@ -126,32 +107,36 @@ class Store<State : org.rekotlin.State>(
         }
     }
 
-    fun unsubscribe(blockSubscriptions: BlockSubscriptions) {
-        blockSubscriptions.blockSubscriberList.forEach {
-            unsubscribe(it)
-        }
+    // TODO: replace this with varargs unsubscribe
+    fun unsubscribe(blockSubscriptions: BlockSubscriptions) =
+        blockSubscriptions.blockSubscriberList.forEach { unsubscribe(it) }
+
+    private fun defaultDispatch(action: Action) {
+
+        this._state = noInterruptions { reducer(action, this._state) }
     }
 
-    fun _defaultDispatch(action: Action) {
+    private var isDispatching = false
+
+    private fun <T> noInterruptions(work: () -> T): T {
         if (isDispatching) {
             throw Exception(
-                "ReKotlin:ConcurrentMutationError- Action has been dispatched while" +
-                    " a previous action is action is being processed. A reducer" +
-                    " is dispatching an action, or ReKotlin is used in a concurrent context" +
-                    " (e.g. from multiple threads)."
+                    "ReKotlin:ConcurrentMutationError - " +
+                            "Action has been dispatched while a previous action is being processed. " +
+                            "A reducer is dispatching an action, " +
+                            "or you are using ReKotlin in a concurrent context (e.g. multithreaded)."
             )
         }
 
         this.isDispatching = true
-        val newState = reducer(action, this._state)
+        val newState = work()
         this.isDispatching = false
 
-        this._state = newState
+        return newState
+
     }
 
-    override fun dispatch(action: Action) {
-        this.dispatchFunction(action)
-    }
+    override fun dispatch(action: Action) = dispatchFunction(action)
 
 //    override fun dispatch(actionCreator: ActionCreator<State, StoreType<State>>) {
 //        actionCreator(this.state, this)?.let {
@@ -177,3 +162,6 @@ class Store<State : org.rekotlin.State>(
 //        }
 //    }
 }
+
+internal fun <T: State> skipRepeatsTransform(sub: Subscription<T>) = sub.skipRepeats()
+internal fun <T: State> identity(sub: Subscription<T>) = sub

@@ -33,6 +33,8 @@ interface Action
  */
 interface State
 
+typealias SubscriptionTransform<Old, New> = (Subscription<Old>) -> Subscription<New>
+
 typealias Reducer<State> = (action: Action, state: State?) -> State
 
 typealias DispatchFunction = (Action) -> Unit
@@ -81,7 +83,7 @@ interface StoreType<State : org.rekotlin.State> {
      * The main dispatch function that is used by all convenience `dispatch` methods.
      * This dispatch function can be extended by providing middlewares.
      */
-    var dispatchFunction: DispatchFunction
+    val dispatchFunction: DispatchFunction
 
     /**
      * Subscribes the provided subscriber to this store.
@@ -104,7 +106,7 @@ interface StoreType<State : org.rekotlin.State> {
      */
     fun <SelectedState, S : StoreSubscriber<SelectedState>> subscribe(
             subscriber: S,
-            transform: ((Subscription<State>) -> Subscription<SelectedState>)?
+            transform: SubscriptionTransform<State, SelectedState>
     )
 
     /**
