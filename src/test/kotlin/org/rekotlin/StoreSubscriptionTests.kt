@@ -194,26 +194,6 @@ internal class StoreSubscriptionTests {
     }
 
     @Test
-    fun testBlockSubscriber() {
-        val store = Store(reducer = ::blockStateReducer, state = null)
-
-        val subscriber = BlockSubscriber<TestAppState?> { }
-        val subscriber2 = BlockSubscriber<TestStringAppState?> { }
-        val blockSubscriptions = BlockSubscriptions()
-
-        store.subscribe(subscriber) { it.select { it.testAppState } }
-        store.subscribe(subscriber2) { it.select { it.testStringAppState } }
-
-        blockSubscriptions.add(subscriber)
-        blockSubscriptions.add(subscriber2)
-
-        assertEquals(2, store.subscriptions.count())
-
-        store.unsubscribe(blockSubscriptions)
-        assertEquals(0, store.subscriptions.count())
-    }
-
-    @Test
     fun testSubscribeDuringOnNewState() {
         // setup
         val reducer = TestValueStringReducer()

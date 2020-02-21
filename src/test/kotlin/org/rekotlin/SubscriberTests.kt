@@ -54,8 +54,7 @@ internal class SubscriberTests {
      */
     @Test
     fun testComplexStateSelector() {
-        val reducer = TestComplexAppStateReducer()
-        val store = Store(reducer = reducer::handleAction, state = TestComplexAppState())
+        val store = Store(reducer = ::complexAppStateReducer, state = TestComplexAppState())
         val subscriber = TestSelectiveSubscriber()
 
         store.subscribe(subscriber) {
@@ -256,27 +255,26 @@ class TestSelectiveSubscriber : Subscriber<Pair<Int?, String?>> {
     }
 }
 
-internal data class TestComplexAppState(val testValue: Int?, val otherState: OtherState?) : State {
-    constructor() : this(null, null)
-}
+data class TestComplexAppState(
+        val testValue: Int? = null,
+        val otherState: OtherState? = null
+) : State
 
-internal data class OtherState(val name: String?, val age: Int?)
+data class OtherState(val name: String?, val age: Int?)
 
-internal class TestComplexAppStateReducer {
-    fun handleAction(action: Action, state: TestComplexAppState?): TestComplexAppState {
-        var state = state ?: TestComplexAppState()
+fun complexAppStateReducer(action: Action, state: TestComplexAppState?): TestComplexAppState {
+    val oldState = state ?: TestComplexAppState()
 
-        when (action) {
-            is SetValueAction -> {
-                state = state.copy(testValue = action.value)
-            }
-            is SetOtherStateAction -> {
-                state = state.copy(otherState = action.otherState)
-            }
+    return when (action) {
+        is SetValueAction -> {
+            oldState.copy(testValue = action.value)
         }
-
-        return state
+        is SetOtherStateAction -> {
+            oldState.copy(otherState = action.otherState)
+        }
+        else -> oldState
     }
+
 }
 
 internal data class SetOtherStateAction(val otherState: OtherState) : Action
