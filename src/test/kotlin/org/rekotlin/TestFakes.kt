@@ -24,103 +24,76 @@
 
 package org.rekotlin
 
-internal data class TestAppState(val testValue: Int? = null) : State
+data class TestAppState(val testValue: Int? = null) : State
 
-internal data class TestStringAppState(val testValue: String = "Initial") : State
+data class TestStringAppState(val testValue: String = "Initial") : State
 
-internal data class TestCustomSubstate(val value: Int) : State
+data class TestCustomSubstate(val value: Int) : State
 
-internal data class TestBlockState(
-    val testAppState: TestAppState? = null,
-    val testStringAppState: TestStringAppState? = null
-) : State
-
-internal data class TestCustomAppState(val substate: TestCustomSubstate) : State {
+data class TestCustomAppState(val substate: TestCustomSubstate) : State {
     constructor(substateValue: Int = 0) : this(TestCustomSubstate(substateValue))
 }
 
-internal data class NoOpAction(val unit: Unit = Unit) : Action
-internal data class SetValueAction(val value: Int?) : Action {
+data class NoOpAction(val unit: Unit = Unit) : Action
+data class SetValueAction(val value: Int?) : Action {
     companion object {
         val type = "SetValueAction"
     }
 }
 
-internal data class SetValueStringAction(var value: String) : Action {
+data class SetValueStringAction(var value: String) : Action {
     companion object {
         val type = "SetValueStringAction"
     }
 }
 
-internal data class SetCustomSubstateAction(val value: Int) : Action {
+data class SetCustomSubstateAction(val value: Int) : Action {
     companion object {
         val type = "SetCustomSubstateAction"
     }
 }
 
-internal class TestReducer {
-    fun handleAction(action: Action, state: TestAppState?): TestAppState {
-        @Suppress("NAME_SHADOWING")
-        var state = state ?: TestAppState()
+fun testReducer(action: Action, state: TestAppState?): TestAppState {
+    var oldState = state ?: TestAppState()
 
-        when (action) {
-            is SetValueAction -> {
-                state = state.copy(testValue = action.value)
-            }
-        }
+    return when (action) {
+        is SetValueAction -> oldState.copy(testValue = action.value)
+        else -> oldState
 
-        return state
     }
 }
 
-internal class TestValueStringReducer {
-    fun handleAction(action: Action, state: TestStringAppState?): TestStringAppState {
-        @Suppress("NAME_SHADOWING")
-        var state = state ?: TestStringAppState()
+fun stringStateReducer(action: Action, state: TestStringAppState?): TestStringAppState {
+    val oldState = state ?: TestStringAppState()
 
-        when (action) {
-            is SetValueStringAction -> {
-                state = state.copy(testValue = action.value)
-            }
-        }
-
-        return state
+    return when (action) {
+        is SetValueStringAction -> oldState.copy(testValue = action.value)
+        else -> oldState
     }
 }
 
-internal class TestCustomAppStateReducer {
-    fun handleAction(action: Action, state: TestCustomAppState?): TestCustomAppState {
-        @Suppress("NAME_SHADOWING")
-        var state = state ?: TestCustomAppState()
+fun customAppStateReducer(action: Action, state: TestCustomAppState?): TestCustomAppState {
+    val oldState = state ?: TestCustomAppState()
 
-        when (action) {
-            is SetCustomSubstateAction -> {
-                state = state.copy(substate = state.substate.copy(action.value))
-            }
-        }
-
-        return state
+    return when (action) {
+        is SetCustomSubstateAction -> oldState.copy(oldState.substate.copy(action.value))
+        else -> oldState
     }
+
 }
 
-internal fun blockStateReducer(action: Action, testBlockState: TestBlockState?): TestBlockState =
-    TestBlockState(
-        testAppState = TestReducer().handleAction(action, testBlockState?.testAppState),
-        testStringAppState = TestValueStringReducer().handleAction(action, testBlockState?.testStringAppState)
-    )
-
-internal class TestStoreSubscriber<T> : Subscriber<T> {
-    var recievedStates: MutableList<T> = mutableListOf()
+class TestStoreSubscriber<T> : Subscriber<T> {
+    var receivedStates: MutableList<T> = mutableListOf()
 
     override fun newState(state: T) {
-        this.recievedStates.add(state)
+        this.receivedStates.add(state)
     }
 }
 
 /**
  * A subscriber contains another sub-subscribers [Subscriber], which could be subscribe/unsubscribe at some point
  */
-internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
+class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
     private val viewB by lazy { ViewSubscriberTypeB(store) }
     private val viewC by lazy { ViewSubscriberTypeC() }
 
@@ -128,12 +101,12 @@ internal class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Subsc
         when (state.testValue) {
             "subscribe" -> store.subscribe(viewC)
             "unsubscribe" -> store.unsubscribe(viewB)
-            else -> Unit // println(state.testValue)
+            else -> Unit
         }
     }
 }
 
-internal class ViewSubscriberTypeB(store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
+class ViewSubscriberTypeB(store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
     init {
         store.subscribe(this)
     }
@@ -143,13 +116,13 @@ internal class ViewSubscriberTypeB(store: Store<TestStringAppState>) : Subscribe
     }
 }
 
-internal class ViewSubscriberTypeC : Subscriber<TestStringAppState> {
+class ViewSubscriberTypeC : Subscriber<TestStringAppState> {
     override fun newState(state: TestStringAppState) {
         // do nothing
     }
 }
 
-internal class DispatchingSubscriber(var store: Store<TestAppState>) : Subscriber<TestAppState> {
+class DispatchingSubscriber(var store: Store<TestAppState>) : Subscriber<TestAppState> {
 
     override fun newState(state: TestAppState) {
         // Test if we've already dispatched this action to
@@ -160,7 +133,7 @@ internal class DispatchingSubscriber(var store: Store<TestAppState>) : Subscribe
     }
 }
 
-internal class CallbackStoreSubscriber<T>(val handler: (T) -> Unit) : Subscriber<T> {
+class CallbackStoreSubscriber<T>(val handler: (T) -> Unit) : Subscriber<T> {
     override fun newState(state: T) {
         handler(state)
     }

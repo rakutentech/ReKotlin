@@ -27,13 +27,7 @@ package org.rekotlin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal typealias TestSubscriber = TestStoreSubscriber<TestAppState>
-internal typealias CallbackSubscriber = CallbackStoreSubscriber<TestAppState>
-
 internal class StoreSubscriptionTests {
-
-    var reducer = TestReducer()
-    var store = Store(reducer::handleAction, TestAppState())
 
     // this is not going to work in JVM.
     // WeakReference also can't solve it since gc collects non-deterministically
@@ -61,23 +55,23 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testRemoveSubscribers() {
-        store = Store(reducer::handleAction, TestAppState())
-        val subscriber1 = TestSubscriber()
-        val subscriber2 = TestSubscriber()
+        val store = Store(::testReducer, TestAppState())
+        val subscriber1 = TestStoreSubscriber<TestAppState>()
+        val subscriber2 = TestStoreSubscriber<TestAppState>()
 
         store.subscribe(subscriber1)
         store.subscribe(subscriber2)
         store.dispatch(SetValueAction(3))
         assertEquals(2, store.subscriptions.count())
-        assertEquals(3, subscriber1.recievedStates.lastOrNull()?.testValue)
-        assertEquals(3, subscriber2.recievedStates.lastOrNull()?.testValue)
+        assertEquals(3, subscriber1.receivedStates.lastOrNull()?.testValue)
+        assertEquals(3, subscriber2.receivedStates.lastOrNull()?.testValue)
 
         // dereferencing won't remove the subscriber(like in ReSwift)
         // subscriber1 = null
         store.unsubscribe(subscriber1)
         store.dispatch(SetValueAction(5))
         assertEquals(1, store.subscriptions.count())
-        assertEquals(5, subscriber2.recievedStates.lastOrNull()?.testValue)
+        assertEquals(5, subscriber2.receivedStates.lastOrNull()?.testValue)
 
         // dereferencing won't remove the subscriber(like in ReSwift)
         // subscriber1 = null
@@ -91,8 +85,8 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testDuplicateSubscription() {
-        store = Store(reducer::handleAction, TestAppState())
-        val subscriber = TestSubscriber()
+        val store = Store(::testReducer, TestAppState())
+        val subscriber = TestStoreSubscriber<TestAppState>()
 
         // initial subscription
         store.subscribe(subscriber)
@@ -100,14 +94,14 @@ internal class StoreSubscriptionTests {
         store.subscribe(subscriber) { it.skipRepeats { oldState, newState -> oldState.testValue == newState.testValue } }
 
         // One initial state update for every subscription.
-        assertEquals(2, subscriber.recievedStates.count())
+        assertEquals(2, subscriber.receivedStates.count())
 
         store.dispatch(SetValueAction(3))
         store.dispatch(SetValueAction(3))
         store.dispatch(SetValueAction(3))
         store.dispatch(SetValueAction(3))
 
-        assertEquals(3, subscriber.recievedStates.count())
+        assertEquals(3, subscriber.receivedStates.count())
     }
 
     /**
@@ -115,13 +109,13 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testDispatchInitialValue() {
-        store = Store(reducer::handleAction, TestAppState())
-        val subscriber = TestSubscriber()
+        val store = Store(::testReducer, TestAppState())
+        val subscriber = TestStoreSubscriber<TestAppState>()
 
         store.subscribe(subscriber)
         store.dispatch(SetValueAction(3))
 
-        assertEquals(3, subscriber.recievedStates.lastOrNull()?.testValue)
+        assertEquals(3, subscriber.receivedStates.lastOrNull()?.testValue)
     }
 
     /**
@@ -129,7 +123,7 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testAllowDispatchWithinObserver() {
-        store = Store(reducer::handleAction, TestAppState())
+        val store = Store(::testReducer, TestAppState())
         val subscriber = DispatchingSubscriber(store)
 
         store.subscribe(subscriber)
@@ -143,8 +137,8 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testDontDispatchToUnsubscribers() {
-        store = Store(reducer::handleAction, TestAppState())
-        val subscriber = TestSubscriber()
+        val store = Store(::testReducer, TestAppState())
+        val subscriber = TestStoreSubscriber<TestAppState>()
 
         store.dispatch(SetValueAction(5))
         store.subscribe(subscriber)
@@ -158,11 +152,11 @@ internal class StoreSubscriptionTests {
         store.subscribe(subscriber)
         store.dispatch(SetValueAction(20))
 
-        assertEquals(4, subscriber.recievedStates.count())
-        assertEquals(5, subscriber.recievedStates[subscriber.recievedStates.count() - 4].testValue)
-        assertEquals(10, subscriber.recievedStates[subscriber.recievedStates.count() - 3].testValue)
-        assertEquals(25, subscriber.recievedStates[subscriber.recievedStates.count() - 2].testValue)
-        assertEquals(20, subscriber.recievedStates[subscriber.recievedStates.count() - 1].testValue)
+        assertEquals(4, subscriber.receivedStates.count())
+        assertEquals(5, subscriber.receivedStates[subscriber.receivedStates.count() - 4].testValue)
+        assertEquals(10, subscriber.receivedStates[subscriber.receivedStates.count() - 3].testValue)
+        assertEquals(25, subscriber.receivedStates[subscriber.receivedStates.count() - 2].testValue)
+        assertEquals(20, subscriber.receivedStates[subscriber.receivedStates.count() - 1].testValue)
     }
 
     /**
@@ -170,8 +164,8 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testIgnoreIdenticalSubscribers() {
-        store = Store(reducer::handleAction, TestAppState())
-        val subscriber = TestSubscriber()
+        val store = Store(::testReducer, TestAppState())
+        val subscriber = TestStoreSubscriber<TestAppState>()
 
         store.subscribe(subscriber)
         store.subscribe(subscriber)
@@ -184,8 +178,8 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testIgnoreIdenticalSubstateSubscribers() {
-        store = Store(reducer::handleAction, TestAppState())
-        val subscriber = TestSubscriber()
+        val store = Store(::testReducer, TestAppState())
+        val subscriber = TestStoreSubscriber<TestAppState>()
 
         store.subscribe(subscriber) { it }
         store.subscribe(subscriber) { it }
@@ -196,8 +190,7 @@ internal class StoreSubscriptionTests {
     @Test
     fun testSubscribeDuringOnNewState() {
         // setup
-        val reducer = TestValueStringReducer()
-        val store = Store(reducer = reducer::handleAction, state = TestStringAppState())
+        val store = Store(reducer = ::stringStateReducer, state = TestStringAppState())
 
         val subscribeA = ViewSubscriberTypeA(store)
         store.subscribe(subscribeA)
@@ -209,8 +202,7 @@ internal class StoreSubscriptionTests {
     @Test
     fun testUnSubscribeDuringOnNewState() {
         // setup
-        val reducer = TestValueStringReducer()
-        val store = Store(reducer = reducer::handleAction, state = TestStringAppState())
+        val store = Store(reducer = ::stringStateReducer, state = TestStringAppState())
 
         val subscriberA = ViewSubscriberTypeA(store)
         val subscriberC = ViewSubscriberTypeC()
