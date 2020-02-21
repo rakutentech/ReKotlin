@@ -25,21 +25,16 @@ package org.rekotlin
  * A box around subscriptions and subscribers.
  *
  * Acts as a type-erasing wrapper around a subscription and its transformed subscription.
- * The transformed subscription has a type argument that matches the selected substate of the
+ * The transformed subscription has a type argument that matches the selected sub state of the
  * subscriber; however that type cannot be exposed to the store.
- *
- * The box subscribes either to the original subscription, or if available to the transformed
- * subscription and passes any values that come through this subscriptions to the subscriber.
- *
  */
 internal class SubscriptionBox<State, SelectedState>(
         private val subscription: Subscription<State>,
-        transform: (Subscription<State>) -> Subscription<SelectedState>,
-//        transform: SubscriptionTransform<State, SelectedState>,
+        transform: Subscription<State>.() -> Subscription<SelectedState>,
         internal val subscriber: Subscriber<SelectedState>
 ) where State : org.rekotlin.State {
     init {
-        transform(subscription).observe { _, newState -> subscriber.newState(newState) }
+        subscription.transform().observe { _, newState -> subscriber.newState(newState) }
     }
 
     internal fun newValues(old: State?, new: State) = subscription.newValues(old, new)
@@ -80,13 +75,13 @@ class Subscription<State> {
      */
     internal fun newValues(old: State?, new: State) = observer?.invoke(old, new)
 
-
-    // A caller can observe new values of this subscription through the provided closure.
-    // - Note: subscriptions only support a single observer.
+    /**
+     * A caller can observe new values of this subscription through the provided closure.
+     * Subscriptions only support a single observer.
+     */
     internal fun observe(observer: (State?, State) -> Unit) {
         this.observer = observer
     }
-
 
     // Public API
 
@@ -94,7 +89,7 @@ class Subscription<State> {
      * Provides a subscription that selects a substate of the state of the original subscription.
      * @param selector A closure that maps a state to a selected substate
      */
-    fun <SelectedState> select(selector: ((State) -> SelectedState)): Subscription<SelectedState> =
+    fun <SelectedState> select(selector: (State.() -> SelectedState)): Subscription<SelectedState> =
         _select(selector)
 
     /**
@@ -122,7 +117,7 @@ class Subscription<State> {
      * Provides a subscription that skips certain state updates of the original subscription.
      *
      * This is identical to `skipRepeats` and is provided simply for convenience.
-     * @param when A closure that determines whether a given state update is a repeat and
+     * @param `when` A closure that determines whether a given state update is a repeat and
      * thus should be skipped and not forwarded to subscribers.
      */
     fun skip(`when`: (oldState: State, newState: State) -> Boolean): Subscription<State> =
@@ -132,8 +127,8 @@ class Subscription<State> {
      * Provides a subscription that only updates for certain state changes.
      *
      * This is effectively the inverse of skipRepeats(:)
-     * @param whenBlock A closure that determines whether a given state update should notify
+     * @param `when` A closure that determines whether a given state update should notify
      */
-    fun only(whenBlock: (old: State, new: State) -> Boolean): Subscription<State> =
-        skipRepeats { old, new -> !whenBlock(old, new) }
+    fun only(`when`: (old: State, new: State) -> Boolean): Subscription<State> =
+        skipRepeats { old, new -> !`when`(old, new) }
 }
