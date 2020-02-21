@@ -10,7 +10,7 @@ package org.rekotlin
  * store.subscribe(subscriber)
  * store.subscribe(subscriber2)
  */
-class BlockSubscriber<S>(private val block: (S) -> Unit) : StoreSubscriber<S> {
+class BlockSubscriber<S>(private val block: (S) -> Unit) : Subscriber<S> {
 
     override fun newState(state: S) {
         block.invoke(state)

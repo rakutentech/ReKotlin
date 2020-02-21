@@ -27,6 +27,9 @@ package org.rekotlin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+internal typealias TestSubscriber = TestStoreSubscriber<TestAppState>
+internal typealias CallbackSubscriber = CallbackStoreSubscriber<TestAppState>
+
 internal class StoreSubscriptionTests {
 
     var reducer = TestReducer()
