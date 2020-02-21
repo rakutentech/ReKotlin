@@ -258,7 +258,7 @@ class TestSelectiveSubscriber : StoreSubscriber<Pair<Int?, String?>> {
     }
 }
 
-internal data class TestComplexAppState(val testValue: Int?, val otherState: OtherState?) : StateType {
+internal data class TestComplexAppState(val testValue: Int?, val otherState: OtherState?) : State {
     constructor() : this(null, null)
 }
 
