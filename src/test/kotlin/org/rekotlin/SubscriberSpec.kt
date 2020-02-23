@@ -25,242 +25,203 @@
 package org.rekotlin
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
-internal class SubscriberTests {
+class FakeSubscriber<T> : Subscriber<T> {
+    var lastState: T? = null
+    var callCount = 0
 
-    /**
-     * it allows to pass a state selector closure
-     */
-    @Test
-    fun testAllowsSelectorClosure() {
-        val store = Store(::testReducer, TestAppState())
-        val subscriber = TestFilteredSubscriber<Int?>()
-
-        store.subscribe(subscriber) { select { testValue } }
-
-        store.dispatch(SetValueAction(3))
-
-        assertEquals(3, subscriber.recievedValue)
-
-        store.dispatch(SetValueAction(null))
-
-        assertEquals(null, subscriber.recievedValue)
+    override fun newState(state: T) {
+        lastState = state
+        callCount += 1
     }
+}
+
+class SubscriberTests {
+
+    @Test
+    fun `should allow to select substate`() {
+        val store = Store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<Int?>()
+        store.subscribe(subscriber) { select { number } }
+
+        store.dispatch(SetIntAction(3))
+
+        assertEquals(3, subscriber.lastState)
+    }
+
+    @Test
+    fun `should allow to select substate, even if it's null`() {
+        val store = Store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<Int?>()
+        store.subscribe(subscriber) { select { number } }
+
+        store.dispatch(SetIntAction(null))
+
+        assertEquals(null, subscriber.lastState)
+    }
+
+    data class ComplexAppState(
+            val number: Int? = null,
+            val other: OtherState? = null
+    ) : State
+
+    data class OtherState(val name: String?, val age: Int?)
+
+    private fun complexAppStateReducer(action: Action, state: ComplexAppState?): ComplexAppState {
+        val oldState = state ?: ComplexAppState()
+
+        return when (action) {
+            is SetIntAction -> oldState.copy(number = action.value)
+            is SetOtherStateAction -> oldState.copy(other = action.otherState)
+            else -> oldState
+        }
+    }
+
+    data class SetOtherStateAction(val otherState: OtherState) : Action
 
     /**
      * it supports complex state selector closures
      */
     @Test
-    fun testComplexStateSelector() {
-        val store = Store(reducer = ::complexAppStateReducer, state = TestComplexAppState())
-        val subscriber = TestSelectiveSubscriber()
-
-        store.subscribe(subscriber) {
-            select { Pair(testValue, otherState?.name) }
-        }
-        store.dispatch(SetValueAction(5))
-        store.dispatch(SetOtherStateAction(OtherState("TestName", 99)))
-
-        assertEquals(5, subscriber.recievedValue.first)
-        assertEquals("TestName", subscriber.recievedValue.second)
-    }
-
-    /**
-     * it does not notify subscriber for unchanged substate state when using `skipRepeats`.
-     */
-    @Test
-    fun testUnchangedStateSelector() {
-        val store = Store(::testReducer, TestAppState(3))
-        val subscriber = TestFilteredSubscriber<Int?>()
+    fun `should allow to select sub state from complex app state`() {
+        val store = Store(::complexAppStateReducer, ComplexAppState())
+        val subscriber = FakeSubscriber<Pair<Int?, String?>>()
 
         store.subscribe(subscriber) {
             select {
-                testValue
-            }.skipRepeats { oldState, newState ->
-                oldState == newState
+                Pair(number, other?.name)
             }
         }
 
-        assertEquals(3, subscriber.recievedValue)
+        store.dispatch(SetIntAction(5))
+        store.dispatch(SetOtherStateAction(OtherState("TestName", 99)))
 
-        store.dispatch(SetValueAction(3))
 
-        assertEquals(3, subscriber.recievedValue)
-        assertEquals(1, subscriber.newStateCallCount)
+        assertNotNull(subscriber.lastState)
+        assertEquals(5, subscriber.lastState?.first)
+        assertEquals("TestName", subscriber.lastState?.second)
     }
 
-    /**
-     * it does not notify subscriber for unchanged substate state when using the default
-     * `skipRepeats` implementation.
-     */
+
     @Test
-    fun testUnchangedStateSelectorDefaultSkipRepeats() {
-        val store = Store(::stringStateReducer, TestStringAppState())
-        val subscriber = TestFilteredSubscriber<String>()
+    fun `should not notify subscriber for unchanged substate when using skipRepeats "manually"`() {
+        val store = Store(::intReducer, IntState(3))
+        val subscriber = FakeSubscriber<Int?>()
 
         store.subscribe(subscriber) {
-            select { testValue }.skipRepeats()
+            select { number }.skipRepeats { old, new -> old == new }
         }
 
-        assertEquals("Initial", subscriber.recievedValue)
+        store.dispatch(SetIntAction(3))
+        store.dispatch(SetIntAction(3))
 
-        store.dispatch(SetValueStringAction("Initial"))
-
-        assertEquals("Initial", subscriber.recievedValue)
-        assertEquals(1, subscriber.newStateCallCount)
-    }
-
-    /**
-     * it skips repeated state values by when `skipRepeats` returns `true`.
-     */
-    @Test
-    fun testSkipsStateUpdatesForCustomEqualityChecks() {
-        val state = TestCustomAppState(5)
-        val store = Store(::customAppStateReducer, state)
-        val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
-
-        store.subscribe(subscriber) {
-            select { substate }
-                .skipRepeats { oldState, newState -> oldState.value == newState.value }
-        }
-
-        assertEquals(5, subscriber.recievedValue?.value)
-
-        store.dispatch(SetCustomSubstateAction(5))
-
-        assertEquals(5, subscriber.recievedValue?.value)
-        assertEquals(1, subscriber.newStateCallCount)
+        assertEquals(1, subscriber.callCount)
     }
 
     @Test
-    fun testPassesOnDuplicateSubstateUpdatesByDefault() {
-        val store = Store(::stringStateReducer, TestStringAppState())
-        val subscriber = TestFilteredSubscriber<String>()
+    fun `should not notify subscriber for unchanged substate when using the built in skipRepeats`() {
+        val store = Store(::intReducer, IntState(3))
+        val subscriber = FakeSubscriber<Int?>()
 
-        store.subscribe(subscriber) {
-            select { testValue }
-        }
+        store.subscribe(subscriber) { select { number }.skipRepeats() }
 
-        assertEquals("Initial", subscriber.recievedValue)
+        store.dispatch(SetIntAction(3))
+        store.dispatch(SetIntAction(3))
 
-        store.dispatch(SetValueStringAction("Initial"))
-
-        assertEquals("Initial", subscriber.recievedValue)
-        assertEquals(2, subscriber.newStateCallCount)
+        assertEquals(1, subscriber.callCount)
     }
 
     @Test
-    fun testSkipsStateUpdatesForEquatableStateByDefault() {
-        val store = Store(::stringStateReducer, TestStringAppState())
-        val subscriber = TestFilteredSubscriber<TestStringAppState>()
+    fun `should not notify subscriber for unchanged substate when using the default skiptRepeats`() {
+        val store = Store(::intReducer, IntState(3), skipRepeats = true)
+        val subscriber = FakeSubscriber<Int?>()
+
+        store.subscribe(subscriber) { select { number } }
+
+        store.dispatch(SetIntAction(3))
+        store.dispatch(SetIntAction(3))
+
+        assertEquals(1, subscriber.callCount)
+    }
+
+    @Test
+    fun `should skips repeated state updates for equatable state by default`() {
+        val store = Store(::stringReducer, StringState())
+        val subscriber = FakeSubscriber<StringState>()
 
         store.subscribe(subscriber)
 
-        assertEquals("Initial", subscriber.recievedValue?.testValue)
+        store.dispatch(SetStringAction("Initial"))
+        store.dispatch(SetStringAction("Initial"))
 
-        store.dispatch(SetValueStringAction("Initial"))
+        assertEquals(1, subscriber.callCount)
+    }
 
-        assertEquals("Initial", subscriber.recievedValue?.testValue)
-        assertEquals(1, subscriber.newStateCallCount)
+    @Test
+    fun `should skips repeated state updates for equatable selected sub-state by default`() {
+        val store = Store(::intReducer, IntState(3))
+        val subscriber = FakeSubscriber<Int?>()
+
+        store.subscribe(subscriber) { select { number } }
+
+        store.dispatch(SetIntAction(3))
+        store.dispatch(SetIntAction(3))
+
+        assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun testPassesOnDuplicateStateUpdatesInCustomizedStore() {
-        val store = Store(::stringStateReducer, TestStringAppState(), skipRepeats = false)
-        val subscriber = TestFilteredSubscriber<TestStringAppState>()
+        val store = Store(::stringReducer, StringState(), skipRepeats = false)
+        val subscriber = FakeSubscriber<StringState>()
 
         store.subscribe(subscriber)
 
-        assertEquals("Initial", subscriber.recievedValue?.testValue)
+        assertEquals("Initial", subscriber.lastState?.name)
 
-        store.dispatch(SetValueStringAction("Initial"))
+        store.dispatch(SetStringAction("Initial"))
 
-        assertEquals("Initial", subscriber.recievedValue?.testValue)
-        assertEquals(2, subscriber.newStateCallCount)
+        assertEquals("Initial", subscriber.lastState?.name)
+        assertEquals(2, subscriber.callCount)
     }
 
     @Test
     fun testSkipWhen() {
         val state = TestCustomAppState(5)
         val store = Store(::customAppStateReducer, state)
-        val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
+        val subscriber = FakeSubscriber<SubState>()
 
         store.subscribe(subscriber) {
-            select { substate }
+            select { subState }
                 .skip { oldState, newState -> oldState.value == newState.value }
         }
 
-        assertEquals(5, subscriber.recievedValue?.value)
+        assertEquals(5, subscriber.lastState?.value)
 
-        store.dispatch(SetCustomSubstateAction(5))
+        store.dispatch(SetCustomSubStateAction(5))
 
-        assertEquals(5, subscriber.recievedValue?.value)
-        assertEquals(1, subscriber.newStateCallCount)
+        assertEquals(5, subscriber.lastState?.value)
+        assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun testOnlyWhen() {
         val state = TestCustomAppState(5)
         val store = Store(::customAppStateReducer, state)
-        val subscriber = TestFilteredSubscriber<TestCustomSubstate>()
+        val subscriber = FakeSubscriber<SubState>()
 
         store.subscribe(subscriber) {
-            select { substate }
+            select { subState }
                 .only { oldState, newState -> oldState.value != newState.value }
         }
 
-        assertEquals(5, subscriber.recievedValue?.value)
+        assertEquals(5, subscriber.lastState?.value)
 
-        store.dispatch(SetCustomSubstateAction(5))
+        store.dispatch(SetCustomSubStateAction(5))
 
-        assertEquals(5, subscriber.recievedValue?.value)
-        assertEquals(1, subscriber.newStateCallCount)
+        assertEquals(5, subscriber.lastState?.value)
+        assertEquals(1, subscriber.callCount)
     }
 }
-
-internal class TestFilteredSubscriber<T> : Subscriber<T> {
-    var recievedValue: T? = null
-    var newStateCallCount = 0
-
-    override fun newState(state: T) {
-        recievedValue = state
-        newStateCallCount += 1
-    }
-}
-
-/**
- * Example of how you can select a substate. The return value from
- *`selectSubstate` and the argument for `newState` need to match up.
- */
-class TestSelectiveSubscriber : Subscriber<Pair<Int?, String?>> {
-    var recievedValue: Pair<Int?, String?> = Pair(null, null)
-
-    override fun newState(state: Pair<Int?, String?>) {
-        recievedValue = state
-    }
-}
-
-data class TestComplexAppState(
-        val testValue: Int? = null,
-        val otherState: OtherState? = null
-) : State
-
-data class OtherState(val name: String?, val age: Int?)
-
-fun complexAppStateReducer(action: Action, state: TestComplexAppState?): TestComplexAppState {
-    val oldState = state ?: TestComplexAppState()
-
-    return when (action) {
-        is SetValueAction -> {
-            oldState.copy(testValue = action.value)
-        }
-        is SetOtherStateAction -> {
-            oldState.copy(otherState = action.otherState)
-        }
-        else -> oldState
-    }
-
-}
-
-internal data class SetOtherStateAction(val otherState: OtherState) : Action

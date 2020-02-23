@@ -45,16 +45,12 @@ class Store<State : org.rekotlin.State>(
             field = value
 
             value?.let {
-                subscriptions.forEach {
-                    it.newValues(oldValue, value)
-                }
+                subscriptions.forEach { it.newValues(oldValue, value) }
             }
         }
 
     override val state: State
-        get() {
-            return _state!!
-        }
+        get() = _state!!
 
     @Suppress("NAME_SHADOWING")
     override val dispatchAction: DispatchAction = middleware
@@ -62,9 +58,7 @@ class Store<State : org.rekotlin.State>(
             .fold(this::defaultDispatch as DispatchAction,
                     { dispatch, middleware -> middleware(this::dispatch, this::state )(dispatch) })
 
-    // TODO: make this private?
     internal val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
-
     internal val listeners: MutableList<ListenerBox<*>> = CopyOnWriteArrayList()
 
     init {
@@ -75,18 +69,22 @@ class Store<State : org.rekotlin.State>(
         }
     }
 
-    override fun <S : Subscriber<State>> subscribe(subscriber: S) {
-        this.subscribe(subscriber, if (skipRepeats) ::skipRepeatsTransform else ::stateIdentity)
-    }
+    override fun <S : Subscriber<State>> subscribe(subscriber: S) =
+            subscribe(subscriber, ::stateIdentity)
 
-    // TODO: add subscription as receiver for transform to make for fluent API
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
             subscriber: S,
             selector: Subscription<State>.() -> Subscription<SelectedState>
     ) {
         unsubscribe(subscriber)
 
-        val box = SubscriptionBox(Subscription(), selector, subscriber)
+        val actualSelector = if (skipRepeats) {
+            compose(selector, Subscription<SelectedState>::skipRepeatsTransform)
+        } else {
+            selector
+        }
+
+        val box = SubscriptionBox(Subscription(), actualSelector, subscriber)
 
         // each subscriber has its own potentially different SelectedState that doesn't have to conform to StateType
         @Suppress("UNCHECKED_CAST")
@@ -163,6 +161,8 @@ internal class ListenerBox<E: Effect>(
     }
 }
 
-private fun <T: State> skipRepeatsTransform(sub: Subscription<T>) = sub.skipRepeats()
+private fun <T> Subscription<T>.skipRepeatsTransform(): Subscription<T> = this.skipRepeats()
 private fun <T: State> stateIdentity(sub: Subscription<T>) = sub
 private fun <T: Effect> effectIdentity(effect: T) = effect
+
+private fun <T, S> compose(first: T.() -> S, second: S.() -> S): T.() -> S = { first().second() }
