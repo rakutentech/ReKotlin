@@ -24,50 +24,36 @@
 
 package org.rekotlin
 
-data class TestAppState(val testValue: Int? = null) : State
+data class IntState(val number: Int? = null) : State
 
-data class TestStringAppState(val testValue: String = "Initial") : State
+data class StringState(val name: String = "Initial") : State
 
-data class TestCustomSubstate(val value: Int) : State
+data class SubState(val value: Int) : State
 
-data class TestCustomAppState(val substate: TestCustomSubstate) : State {
-    constructor(substateValue: Int = 0) : this(TestCustomSubstate(substateValue))
+data class TestCustomAppState(val subState: SubState) : State {
+    constructor(subState: Int = 0) : this(SubState(subState))
 }
 
 data class NoOpAction(val unit: Unit = Unit) : Action
-data class SetValueAction(val value: Int?) : Action {
-    companion object {
-        val type = "SetValueAction"
-    }
-}
+data class SetIntAction(val value: Int?) : Action
+data class SetStringAction(var value: String) : Action
+data class SetCustomSubStateAction(val value: Int) : Action
 
-data class SetValueStringAction(var value: String) : Action {
-    companion object {
-        val type = "SetValueStringAction"
-    }
-}
-
-data class SetCustomSubstateAction(val value: Int) : Action {
-    companion object {
-        val type = "SetCustomSubstateAction"
-    }
-}
-
-fun testReducer(action: Action, state: TestAppState?): TestAppState {
-    var oldState = state ?: TestAppState()
+fun intReducer(action: Action, state: IntState?): IntState {
+    val oldState = state ?: IntState()
 
     return when (action) {
-        is SetValueAction -> oldState.copy(testValue = action.value)
+        is SetIntAction -> oldState.copy(number = action.value)
         else -> oldState
 
     }
 }
 
-fun stringStateReducer(action: Action, state: TestStringAppState?): TestStringAppState {
-    val oldState = state ?: TestStringAppState()
+fun stringReducer(action: Action, state: StringState?): StringState {
+    val oldState = state ?: StringState()
 
     return when (action) {
-        is SetValueStringAction -> oldState.copy(testValue = action.value)
+        is SetStringAction -> oldState.copy(name = action.value)
         else -> oldState
     }
 }
@@ -76,29 +62,29 @@ fun customAppStateReducer(action: Action, state: TestCustomAppState?): TestCusto
     val oldState = state ?: TestCustomAppState()
 
     return when (action) {
-        is SetCustomSubstateAction -> oldState.copy(oldState.substate.copy(action.value))
+        is SetCustomSubStateAction -> oldState.copy(oldState.subState.copy(action.value))
         else -> oldState
     }
 
 }
 
-class TestStoreSubscriber<T> : Subscriber<T> {
-    var receivedStates: MutableList<T> = mutableListOf()
+class FakeSubscriberWithHistory<T> : Subscriber<T> {
+    var states: MutableList<T> = mutableListOf()
 
     override fun newState(state: T) {
-        this.receivedStates.add(state)
+        this.states.add(state)
     }
 }
 
 /**
  * A subscriber contains another sub-subscribers [Subscriber], which could be subscribe/unsubscribe at some point
  */
-class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
+class ViewSubscriberTypeA(var store: Store<StringState>) : Subscriber<StringState> {
     private val viewB by lazy { ViewSubscriberTypeB(store) }
     private val viewC by lazy { ViewSubscriberTypeC() }
 
-    override fun newState(state: TestStringAppState) {
-        when (state.testValue) {
+    override fun newState(state: StringState) {
+        when (state.name) {
             "subscribe" -> store.subscribe(viewC)
             "unsubscribe" -> store.unsubscribe(viewB)
             else -> Unit
@@ -106,35 +92,30 @@ class ViewSubscriberTypeA(var store: Store<TestStringAppState>) : Subscriber<Tes
     }
 }
 
-class ViewSubscriberTypeB(store: Store<TestStringAppState>) : Subscriber<TestStringAppState> {
+class ViewSubscriberTypeB(store: Store<StringState>) : Subscriber<StringState> {
     init {
         store.subscribe(this)
     }
 
-    override fun newState(state: TestStringAppState) {
+    override fun newState(state: StringState) {
         // do nothing
     }
 }
 
-class ViewSubscriberTypeC : Subscriber<TestStringAppState> {
-    override fun newState(state: TestStringAppState) {
+class ViewSubscriberTypeC : Subscriber<StringState> {
+    override fun newState(state: StringState) {
         // do nothing
     }
 }
 
-class DispatchingSubscriber(var store: Store<TestAppState>) : Subscriber<TestAppState> {
+class DispatchingSubscriber(var store: Store<IntState>) : Subscriber<IntState> {
 
-    override fun newState(state: TestAppState) {
+    override fun newState(state: IntState) {
         // Test if we've already dispatched this action to
         // avoid endless recursion
-        if (state.testValue != 5) {
-            this.store.dispatch(SetValueAction(5))
+        if (state.number != 5) {
+            this.store.dispatch(SetIntAction(5))
         }
     }
 }
 
-class CallbackStoreSubscriber<T>(val handler: (T) -> Unit) : Subscriber<T> {
-    override fun newState(state: T) {
-        handler(state)
-    }
-}

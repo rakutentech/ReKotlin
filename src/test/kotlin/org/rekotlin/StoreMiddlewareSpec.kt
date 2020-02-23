@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 internal val firstMiddleware: Middleware<State> = { _, _ ->
     { next ->
         { action ->
-            (action as? SetValueStringAction)?.let {
+            (action as? SetStringAction)?.let {
                 it.value += " First Middleware"
                 next(action)
             } ?: next(action)
@@ -41,7 +41,7 @@ internal val firstMiddleware: Middleware<State> = { _, _ ->
 internal val secondMiddleware: Middleware<State> = { _, _ ->
     { next ->
         { action ->
-            (action as? SetValueStringAction)?.let {
+            (action as? SetStringAction)?.let {
                 it.value += " Second Middleware"
                 next(action)
             } ?: next(action)
@@ -52,8 +52,8 @@ internal val secondMiddleware: Middleware<State> = { _, _ ->
 internal val dispatchingMiddleware: Middleware<State> = { dispatch, _ ->
     { next ->
         { action ->
-            (action as? SetValueAction)?.let {
-                dispatch(SetValueStringAction("${it.value ?: 0}"))
+            (action as? SetIntAction)?.let {
+                dispatch(SetStringAction("${it.value ?: 0}"))
             }
 
             next(action)
@@ -61,17 +61,17 @@ internal val dispatchingMiddleware: Middleware<State> = { dispatch, _ ->
     }
 }
 
-internal val stateAccessingMiddleware: Middleware<TestStringAppState> = { dispatch, getState ->
+internal val stateAccessingMiddleware: Middleware<StringState> = { dispatch, getState ->
     { next ->
         { action ->
 
             val appState = getState()
-            val stringAction = action as? SetValueStringAction
+            val stringAction = action as? SetStringAction
 
             // avoid endless recursion by checking if we've dispatched exactly this action
-            if (appState?.testValue == "OK" && stringAction?.value != "Not OK") {
+            if (appState?.name == "OK" && stringAction?.value != "Not OK") {
                 // dispatch a new action
-                dispatch(SetValueStringAction("Not OK"))
+                dispatch(SetStringAction("Not OK"))
 
                 // and swallow the current one
                 dispatch(NoOpAction())
@@ -91,18 +91,18 @@ internal class StoreMiddlewareTests {
     fun testDecorateDispatch() {
 
         val store = Store(
-            reducer = ::stringStateReducer,
-            state = TestStringAppState(),
+            reducer = ::stringReducer,
+            state = StringState(),
             middleware = listOf(firstMiddleware, secondMiddleware)
         )
 
-        val subscriber = TestStoreSubscriber<TestStringAppState>()
+        val subscriber = FakeSubscriberWithHistory<StringState>()
         store.subscribe(subscriber)
 
-        val action = SetValueStringAction("OK")
+        val action = SetStringAction("OK")
         store.dispatch(action)
 
-        assertEquals("OK First Middleware Second Middleware", store.state.testValue)
+        assertEquals("OK First Middleware Second Middleware", store.state.name)
     }
 
     /**
@@ -112,18 +112,18 @@ internal class StoreMiddlewareTests {
     fun testCanDispatch() {
 
         val store = Store(
-            reducer = ::stringStateReducer,
-            state = TestStringAppState(),
+            reducer = ::stringReducer,
+            state = StringState(),
             middleware = listOf(firstMiddleware, secondMiddleware, dispatchingMiddleware)
         )
 
-        val subscriber = TestStoreSubscriber<TestStringAppState>()
+        val subscriber = FakeSubscriberWithHistory<StringState>()
         store.subscribe(subscriber)
 
-        val action = SetValueAction(10)
+        val action = SetIntAction(10)
         store.dispatch(action)
 
-        assertEquals("10 First Middleware Second Middleware", store.state.testValue)
+        assertEquals("10 First Middleware Second Middleware", store.state.name)
     }
 
     /**
@@ -132,16 +132,16 @@ internal class StoreMiddlewareTests {
     @Test
     fun testMiddlewareCanAccessState() {
 
-        var state = TestStringAppState()
-        state = state.copy(testValue = "OK")
+        var state = StringState()
+        state = state.copy(name = "OK")
 
         val store = Store(
-            reducer = ::stringStateReducer,
+            reducer = ::stringReducer,
             state = state,
             middleware = listOf(stateAccessingMiddleware)
         )
 
-        store.dispatch(SetValueStringAction("Action That Won't Go Through"))
-        assertEquals("Not OK", store.state.testValue)
+        store.dispatch(SetStringAction("Action That Won't Go Through"))
+        assertEquals("Not OK", store.state.name)
     }
 }
