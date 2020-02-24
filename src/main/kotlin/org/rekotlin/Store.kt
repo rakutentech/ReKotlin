@@ -53,10 +53,24 @@ class Store<State : org.rekotlin.State>(
         get() = _state!!
 
     @Suppress("NAME_SHADOWING")
-    override val dispatchAction: DispatchAction = middleware
+    private val dispatchAction: DispatchAction = middleware
         .reversed()
-            .fold(this::defaultDispatch as DispatchAction,
+            .fold(this::defaultDispatch as DispatchFunction,
                     { dispatch, middleware -> middleware(this::dispatch, this::state )(dispatch) })
+
+    private val dispatchEffect: DispatchEffect = { effect ->
+        listeners.forEach { it.onEffect(effect) }
+    }
+
+    override val dispatchFunction: DispatchFunction
+        get() = { dispatchable: Dispatchable ->
+            when (dispatchable) {
+                is Action -> dispatchAction(dispatchable)
+                is Effect -> dispatchEffect(dispatchable)
+            }
+        }
+
+    override fun dispatch(dispatchable: Dispatchable) = dispatchFunction(dispatchable)
 
     internal val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
     internal val listeners: MutableList<ListenerBox<*>> = CopyOnWriteArrayList()
@@ -102,10 +116,6 @@ class Store<State : org.rekotlin.State>(
         }
     }
 
-    private fun defaultDispatch(action: Action) {
-        this._state = noInterruptions { reducer(action, this._state) }
-    }
-
     private var isDispatching = false
 
     private fun <T> noInterruptions(work: () -> T): T {
@@ -124,16 +134,12 @@ class Store<State : org.rekotlin.State>(
 
         return newState
     }
-
-    override fun dispatch(action: Action) = dispatchAction(action)
-
-    // effects
-
-    override fun dispatch(effect: Effect) = dispatchEffect(effect)
-
-    override val dispatchEffect: DispatchEffect = { effect ->
-            listeners.forEach { it.onEffect(effect) }
-        }
+    private fun defaultDispatch(dispatchable: Dispatchable) =
+            when (dispatchable) {
+                is Action -> _state = noInterruptions { reducer(dispatchable, _state) }
+                is Effect -> listeners.forEach { it.onEffect(dispatchable) }
+                else -> Unit
+            }
 
     override fun subscribe(listener: Listener<Effect>) = subscribe(listener, ::effectIdentity)
 
@@ -149,7 +155,6 @@ class Store<State : org.rekotlin.State>(
 
         listeners.add(ListenerBox(listener, selector))
     }
-
 }
 
 internal class ListenerBox<E: Effect>(
