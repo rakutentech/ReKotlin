@@ -21,6 +21,8 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+interface Dispatchable
+
 /**
  * Marker interface for actions dispatched to a [Store].
  *
@@ -29,7 +31,7 @@ package org.rekotlin
  *
  * All actions need to be marked with this interface.
  */
-interface Action
+interface Action : Dispatchable
 
 /**
  * Marker interface for effects dispatched to a [Store].
@@ -40,7 +42,7 @@ interface Action
  *
  * All effects need to be marked with this interface.
  */
-interface Effect
+interface Effect : Dispatchable
 
 /**
  * Marker Interface for states managed by the store.
@@ -53,6 +55,8 @@ typealias DispatchAction = (Action) -> Unit
 
 typealias DispatchEffect = (Effect) -> Unit
 
+typealias DispatchFunction = (Dispatchable) -> Unit
+
 /**
  * A middleware that can intercept actions that are dispatched to the store before they reach the reducers.
  *
@@ -60,7 +64,9 @@ typealias DispatchEffect = (Effect) -> Unit
  * multiple others. This makes middlewares very powerful. Any middleware will affect all actions
  * dispatched to the store, so use them for cross-cutting concerns only.
  */
-typealias Middleware<State> = (DispatchAction, () -> State?) -> (DispatchAction) -> DispatchAction
+//typealias Middleware<State> = (DispatchAction, () -> State?) -> (DispatchAction) -> DispatchAction
+
+typealias Middleware<State> = (DispatchFunction, () -> State?) -> (DispatchFunction) -> DispatchFunction
 
 /**
  * A state subscriber, waiting for state changes.
@@ -93,46 +99,42 @@ interface StoreType<State : org.rekotlin.State> {
      */
     val state: State
 
+
     /**
-     * Dispatch an action - the simplest way to initiate state changes.
+     * Dispatch an [Action] or [Effect] to the store.
      *
-     * This passes the action to middlewares, delegates to the reducer to determine the new state
-     * and eventually notifies subscribers of (sub-)state changes (if any).
+     * An Action is the simplest way to initiate [State] changes.
+     * This passes the action to [Middleware], delegates to the [Reducer] to determine the new [State]
+     * and eventually notifies [Subscriber]s of (sub-)state changes (if any).
+     *
+     * Effects are one time events that do not change the [State].
+     * This notifies all [Effect] listeners.
+     *
+     * This <b>will not</b> pass anything to [Middleware], delegate to [Reducer] or change [State].
      *
      *
      * Example of dispatching an action:
      * <pre>
      * <code>
-     * store.dispatch( CounterAction.IncreaseCounter )
+     *     // dispatch an action
+     *     store.dispatch(CounterAction.IncreaseCounter)
+     *     // dispatch an effect
+     *     store.dispatch(AnimationEffect
      * </code>
      * </pre>
      *
-     * @param action The action to dispatch to the store
+     * @param dispatchable an action or effect to dispatch to the store
      */
-    fun dispatch(action: Action)
+    fun dispatch(dispatchable: Dispatchable)
+
 
     /**
-     * Dispatch A one time effect that does not change the state.
-     *
-     * This notifies all subscribers to effects.
-     *
-     * This <b>will not</b> pass anything to middlewares, delegate to reducers or change state.
-     */
-    fun dispatch(effect: Effect)
-
-    /**
-     * The dispatch function used to dispatch [Action]s.
+     * The dispatch function to dispatch [Action]s or [Effect]s.
      * Use the property if you want to use only a dispatch function and not the full store, for
      * example for dependency injection.
      */
-    val dispatchAction: DispatchAction
+    val dispatchFunction: DispatchFunction
 
-    /**
-     * The dispatch function used to dispatch [Effects]s.
-     * Use the property if you want to use only a dispatch function and not the full store, for
-     * example for dependency injection.
-     */
-    val dispatchEffect: DispatchEffect
 
     /**
      * Subscribes the state changes of this store.
