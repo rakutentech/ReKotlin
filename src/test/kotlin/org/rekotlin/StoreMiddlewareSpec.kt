@@ -27,7 +27,7 @@ package org.rekotlin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal val firstMiddleware: Middleware<State> = { _, _ ->
+internal val firstMiddleware: Middleware<Any> = { _, _ ->
     { next ->
         { action ->
             (action as? SetStringAction)?.let {
@@ -38,7 +38,7 @@ internal val firstMiddleware: Middleware<State> = { _, _ ->
     }
 }
 
-internal val secondMiddleware: Middleware<State> = { _, _ ->
+internal val secondMiddleware: Middleware<Any> = { _, _ ->
     { next ->
         { action ->
             (action as? SetStringAction)?.let {
@@ -49,7 +49,7 @@ internal val secondMiddleware: Middleware<State> = { _, _ ->
     }
 }
 
-internal val dispatchingMiddleware: Middleware<State> = { dispatch, _ ->
+internal val dispatchingMiddleware: Middleware<Any> = { dispatch, _ ->
     { next ->
         { action ->
             (action as? SetIntAction)?.let {

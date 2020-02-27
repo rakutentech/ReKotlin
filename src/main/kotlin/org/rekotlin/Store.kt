@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 class ReKotlinInit : Action
 
-class Store<State : org.rekotlin.State>(
+class Store<State>(
     private val reducer: Reducer<State>,
     state: State?,
     middleware: List<Middleware<State>> = emptyList(),
@@ -167,7 +167,7 @@ internal class ListenerBox<E: Effect>(
 }
 
 private fun <T> Subscription<T>.skipRepeatsTransform(): Subscription<T> = this.skipRepeats()
-private fun <T: State> stateIdentity(sub: Subscription<T>) = sub
+private fun <T> stateIdentity(sub: Subscription<T>) = sub
 private fun <T: Effect> effectIdentity(effect: T) = effect
 
 private fun <T, S> compose(first: T.() -> S, second: S.() -> S): T.() -> S = { first().second() }
