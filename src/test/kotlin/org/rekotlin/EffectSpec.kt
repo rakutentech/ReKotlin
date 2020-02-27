@@ -27,7 +27,7 @@ package org.rekotlin
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-object AppState : State
+object AppState
 
 @Suppress("UNUSED_PARAMETER")
 fun reducer(action: Action, state: AppState?) = state ?: AppState

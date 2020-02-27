@@ -32,7 +32,7 @@ internal class SubscriptionBox<State, SelectedState>(
         private val subscription: Subscription<State>,
         transform: Subscription<State>.() -> Subscription<SelectedState>,
         internal val subscriber: Subscriber<SelectedState>
-) where State : org.rekotlin.State {
+) {
     init {
         subscription.transform().observe { _, newState -> subscriber.newState(newState) }
     }

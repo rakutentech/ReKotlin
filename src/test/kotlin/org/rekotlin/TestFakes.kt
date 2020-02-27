@@ -24,13 +24,13 @@
 
 package org.rekotlin
 
-data class IntState(val number: Int? = null) : State
+data class IntState(val number: Int? = null)
 
-data class StringState(val name: String = "Initial") : State
+data class StringState(val name: String = "Initial")
 
-data class SubState(val value: Int) : State
+data class SubState(val value: Int)
 
-data class TestCustomAppState(val subState: SubState) : State {
+data class TestCustomAppState(val subState: SubState) {
     constructor(subState: Int = 0) : this(SubState(subState))
 }
 

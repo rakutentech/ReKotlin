@@ -65,7 +65,7 @@ class SubscriberTests {
     data class ComplexAppState(
             val number: Int? = null,
             val other: OtherState? = null
-    ) : State
+    )
 
     data class OtherState(val name: String?, val age: Int?)
 

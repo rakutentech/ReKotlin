@@ -44,11 +44,6 @@ interface Action : Dispatchable
  */
 interface Effect : Dispatchable
 
-/**
- * Marker Interface for states managed by the store.
- */
-interface State // TODO: do we really need a marker interface?
-
 typealias Reducer<State> = (action: Action, state: State?) -> State
 
 typealias DispatchAction = (Action) -> Unit
@@ -92,7 +87,7 @@ interface Listener<Effect> {
  * Stores receive actions and use reducers combined with these actions, to calculate state changes.
  * Upon every state update a store informs all of its subscribers.
  */
-interface StoreType<State : org.rekotlin.State> {
+interface StoreType<State> {
 
     /**
      * The current state stored in the store.
