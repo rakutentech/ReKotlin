@@ -1,7 +1,4 @@
 /**
- * Created by Taras Vozniuk on 10/08/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -45,7 +42,7 @@ class SimpleSubscriber<S>(private val block: (S) -> Unit): Subscriber<S> {
 
 internal class EffectTest {
 
-    private val store = Store(::reducer, null)
+    private val store = ParentStore(::reducer, null)
 
     @Test
     fun `should not subscribe any listeners when subscribing to state`() {

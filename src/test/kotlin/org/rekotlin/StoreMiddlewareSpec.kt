@@ -1,7 +1,4 @@
 /**
- * Created by Taras Vozniuk on 10/08/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -30,9 +27,9 @@ import org.junit.jupiter.api.Test
 internal val firstMiddleware: Middleware<Any> = { _, _ ->
     { next ->
         { action ->
-            (action as? SetStringAction)?.let {
-                it.value += " First Middleware"
-                next(action)
+            (action as? StringAction)?.let {
+
+                next(StringAction("${it.value} First Middleware"))
             } ?: next(action)
         }
     }
@@ -41,9 +38,8 @@ internal val firstMiddleware: Middleware<Any> = { _, _ ->
 internal val secondMiddleware: Middleware<Any> = { _, _ ->
     { next ->
         { action ->
-            (action as? SetStringAction)?.let {
-                it.value += " Second Middleware"
-                next(action)
+            (action as? StringAction)?.let {
+                next(StringAction("${it.value} Second Middleware"))
             } ?: next(action)
         }
     }
@@ -52,8 +48,8 @@ internal val secondMiddleware: Middleware<Any> = { _, _ ->
 internal val dispatchingMiddleware: Middleware<Any> = { dispatch, _ ->
     { next ->
         { action ->
-            (action as? SetIntAction)?.let {
-                dispatch(SetStringAction("${it.value ?: 0}"))
+            (action as? IntAction)?.let {
+                dispatch(StringAction("${it.value ?: 0}"))
             }
 
             next(action)
@@ -66,12 +62,12 @@ internal val stateAccessingMiddleware: Middleware<StringState> = { dispatch, get
         { action ->
 
             val appState = getState()
-            val stringAction = action as? SetStringAction
+            val stringAction = action as? StringAction
 
             // avoid endless recursion by checking if we've dispatched exactly this action
             if (appState?.name == "OK" && stringAction?.value != "Not OK") {
                 // dispatch a new action
-                dispatch(SetStringAction("Not OK"))
+                dispatch(StringAction("Not OK"))
 
                 // and swallow the current one
                 dispatch(NoOpAction())
@@ -90,7 +86,7 @@ internal class StoreMiddlewareTests {
     @Test
     fun testDecorateDispatch() {
 
-        val store = Store(
+        val store = ParentStore(
             reducer = ::stringReducer,
             state = StringState(),
             middleware = listOf(firstMiddleware, secondMiddleware)
@@ -99,7 +95,7 @@ internal class StoreMiddlewareTests {
         val subscriber = FakeSubscriberWithHistory<StringState>()
         store.subscribe(subscriber)
 
-        val action = SetStringAction("OK")
+        val action = StringAction("OK")
         store.dispatch(action)
 
         assertEquals("OK First Middleware Second Middleware", store.state.name)
@@ -111,7 +107,7 @@ internal class StoreMiddlewareTests {
     @Test
     fun testCanDispatch() {
 
-        val store = Store(
+        val store = ParentStore(
             reducer = ::stringReducer,
             state = StringState(),
             middleware = listOf(firstMiddleware, secondMiddleware, dispatchingMiddleware)
@@ -120,7 +116,7 @@ internal class StoreMiddlewareTests {
         val subscriber = FakeSubscriberWithHistory<StringState>()
         store.subscribe(subscriber)
 
-        val action = SetIntAction(10)
+        val action = IntAction(10)
         store.dispatch(action)
 
         assertEquals("10 First Middleware Second Middleware", store.state.name)
@@ -135,13 +131,13 @@ internal class StoreMiddlewareTests {
         var state = StringState()
         state = state.copy(name = "OK")
 
-        val store = Store(
+        val store = ParentStore(
             reducer = ::stringReducer,
             state = state,
             middleware = listOf(stateAccessingMiddleware)
         )
 
-        store.dispatch(SetStringAction("Action That Won't Go Through"))
+        store.dispatch(StringAction("Action That Won't Go Through"))
         assertEquals("Not OK", store.state.name)
     }
 }
