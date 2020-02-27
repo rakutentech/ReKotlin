@@ -21,6 +21,9 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * A marker for anything that can be dispatched to a [Store]
+ */
 interface Dispatchable
 
 /**
@@ -59,8 +62,6 @@ typealias DispatchFunction = (Dispatchable) -> Unit
  * multiple others. This makes middlewares very powerful. Any middleware will affect all actions
  * dispatched to the store, so use them for cross-cutting concerns only.
  */
-//typealias Middleware<State> = (DispatchAction, () -> State?) -> (DispatchAction) -> DispatchAction
-
 typealias Middleware<State> = (DispatchFunction, () -> State?) -> (DispatchFunction) -> DispatchFunction
 
 /**
@@ -81,31 +82,18 @@ interface Listener<Effect> {
     fun onEffect(effect: Effect)
 }
 
-/**
- * Defines the interface of Stores in ReKotlin. `Store` is the default implementation of this
- * interface. Applications have a single store that stores the entire application state.
- * Stores receive actions and use reducers combined with these actions, to calculate state changes.
- * Upon every state update a store informs all of its subscribers.
- */
-interface StoreType<State> {
-
-    /**
-     * The current state stored in the store.
-     */
-    val state: State
-
-
+interface DispatchStore {
     /**
      * Dispatch an [Action] or [Effect] to the store.
      *
      * An Action is the simplest way to initiate [State] changes.
-     * This passes the action to [Middleware], delegates to the [Reducer] to determine the new [State]
+     * This passes the action to [Middleware], delegates to the [Reducer] to determine the new state.
      * and eventually notifies [Subscriber]s of (sub-)state changes (if any).
      *
      * Effects are one time events that do not change the [State].
      * This notifies all [Effect] listeners.
      *
-     * This <b>will not</b> pass anything to [Middleware], delegate to [Reducer] or change [State].
+     * This <b>will not</b> pass anything to [Middleware], delegate to [Reducer] or change state.
      *
      *
      * Example of dispatching an action:
@@ -129,8 +117,9 @@ interface StoreType<State> {
      * example for dependency injection.
      */
     val dispatchFunction: DispatchFunction
+}
 
-
+interface SubscribeStore<State> {
     /**
      * Subscribes the state changes of this store.
      * Subscribers will receive a call to [Subscriber.newState] whenever the state changes.
@@ -190,4 +179,27 @@ interface StoreType<State> {
      * @param listener: [Listener] that will be unsubscribed
      */
     fun <E: Effect> unsubscribe(listener: Listener<E>)
+}
+
+interface RootStore<State>: Store<State> {
+    operator fun <ChildState> plus(childReducer: Reducer<ChildState>) = childStore(childReducer)
+
+    fun <ChildState> childStore(
+            childReducer: Reducer<ChildState>,
+            initalChildState: ChildState? = null
+    ): Store<Pair<State, ChildState>>
+}
+
+/**
+ * Defines the interface of Stores in ReKotlin. `Store` is the default implementation of this
+ * interface. Applications have a single store that stores the entire application state.
+ * Stores receive actions and use reducers combined with these actions, to calculate state changes.
+ * Upon every state update a store informs all of its subscribers.
+ */
+interface Store<State> : DispatchStore, SubscribeStore<State> {
+
+    /**
+     * The current state stored in the store.
+     */
+    val state: State
 }

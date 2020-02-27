@@ -1,7 +1,4 @@
 /**
- * Created by Taras Vozniuk on 10/08/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -55,13 +52,13 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testRemoveSubscribers() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber1 = FakeSubscriberWithHistory<IntState>()
         val subscriber2 = FakeSubscriberWithHistory<IntState>()
 
         store.subscribe(subscriber1)
         store.subscribe(subscriber2)
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
         assertEquals(2, store.subscriptions.count())
         assertEquals(3, subscriber1.states.lastOrNull()?.number)
         assertEquals(3, subscriber2.states.lastOrNull()?.number)
@@ -69,14 +66,14 @@ internal class StoreSubscriptionTests {
         // dereferencing won't remove the subscriber(like in ReSwift)
         // subscriber1 = null
         store.unsubscribe(subscriber1)
-        store.dispatch(SetIntAction(5))
+        store.dispatch(IntAction(5))
         assertEquals(1, store.subscriptions.count())
         assertEquals(5, subscriber2.states.lastOrNull()?.number)
 
         // dereferencing won't remove the subscriber(like in ReSwift)
         // subscriber1 = null
         store.unsubscribe(subscriber2)
-        store.dispatch(SetIntAction(8))
+        store.dispatch(IntAction(8))
         assertEquals(0, store.subscriptions.count())
     }
 
@@ -85,7 +82,7 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testDuplicateSubscription() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriberWithHistory<IntState>()
 
         // initial subscription
@@ -96,10 +93,10 @@ internal class StoreSubscriptionTests {
         // One initial state update for every subscription.
         assertEquals(2, subscriber.states.count())
 
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(3, subscriber.states.count())
     }
@@ -109,11 +106,11 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testDispatchInitialValue() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriberWithHistory<IntState>()
 
         store.subscribe(subscriber)
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(3, subscriber.states.lastOrNull()?.number)
     }
@@ -123,11 +120,11 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testAllowDispatchWithinObserver() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = DispatchingSubscriber(store)
 
         store.subscribe(subscriber)
-        store.dispatch(SetIntAction(2))
+        store.dispatch(IntAction(2))
 
         assertEquals(5, store.state.number)
     }
@@ -137,20 +134,20 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testDontDispatchToUnsubscribers() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriberWithHistory<IntState>()
 
-        store.dispatch(SetIntAction(5))
+        store.dispatch(IntAction(5))
         store.subscribe(subscriber)
-        store.dispatch(SetIntAction(10))
+        store.dispatch(IntAction(10))
 
         store.unsubscribe(subscriber)
         // Following value is missed due to not being subscribed:
-        store.dispatch(SetIntAction(15))
-        store.dispatch(SetIntAction(25))
+        store.dispatch(IntAction(15))
+        store.dispatch(IntAction(25))
 
         store.subscribe(subscriber)
-        store.dispatch(SetIntAction(20))
+        store.dispatch(IntAction(20))
 
         assertEquals(4, subscriber.states.count())
         assertEquals(5, subscriber.states[subscriber.states.count() - 4].number)
@@ -164,7 +161,7 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testIgnoreIdenticalSubscribers() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriberWithHistory<IntState>()
 
         store.subscribe(subscriber)
@@ -178,7 +175,7 @@ internal class StoreSubscriptionTests {
      */
     @Test
     fun testIgnoreIdenticalSubstateSubscribers() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriberWithHistory<IntState>()
 
         store.subscribe(subscriber) { this }
@@ -190,13 +187,13 @@ internal class StoreSubscriptionTests {
     @Test
     fun testSubscribeDuringOnNewState() {
         // setup
-        val store = Store(::stringReducer, StringState())
+        val store = ParentStore(::stringReducer, StringState())
 
         val subscribeA = ViewSubscriberTypeA(store)
         store.subscribe(subscribeA)
 
         // execute
-        store.dispatch(SetStringAction("subscribe"))
+        store.dispatch(StringAction("subscribe"))
 
         // no crash
     }
@@ -204,7 +201,7 @@ internal class StoreSubscriptionTests {
     @Test
     fun testUnSubscribeDuringOnNewState() {
         // setup
-        val store = Store(reducer = ::stringReducer, state = StringState())
+        val store = ParentStore(reducer = ::stringReducer, state = StringState())
 
         val subscriberA = ViewSubscriberTypeA(store)
         val subscriberC = ViewSubscriberTypeC()
@@ -212,7 +209,7 @@ internal class StoreSubscriptionTests {
         store.subscribe(subscriberC)
 
         // execute
-        store.dispatch(SetStringAction("unsubscribe"))
+        store.dispatch(StringAction("unsubscribe"))
 
         // no crash
     }

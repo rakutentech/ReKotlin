@@ -3,9 +3,6 @@ package org.rekotlin
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * Created by Taras Vozniuk on 31/07/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -26,18 +23,11 @@ import java.util.concurrent.CopyOnWriteArrayList
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/**
- * Initial Action that is dispatched as soon as the store is created.
- * Reducers respond to this action by configuring their initial state.
- */
-class ReKotlinInit : Action
-
-class Store<State>(
-    private val reducer: Reducer<State>,
-    state: State?,
-    middleware: List<Middleware<State>> = emptyList(),
-    private val skipRepeats: Boolean = true
-) : StoreType<State> {
+internal class ChildStore<State>(
+        parentDispatchFunction: DispatchFunction,
+        private val reducer: Reducer<State>,
+        state: State?
+) : Store<State>  {
 
     private var _state: State? = state
         set(value) {
@@ -52,25 +42,23 @@ class Store<State>(
     override val state: State
         get() = _state!!
 
-    @Suppress("NAME_SHADOWING")
-    private val dispatchAction: DispatchAction = middleware
-        .reversed()
-            .fold(this::defaultDispatch as DispatchFunction,
-                    { dispatch, middleware -> middleware(this::dispatch, this::state )(dispatch) })
+    private val dispatchAction: DispatchAction = this::defaultDispatch
 
     private val dispatchEffect: DispatchEffect = { effect ->
         listeners.forEach { it.onEffect(effect) }
     }
 
-    override val dispatchFunction: DispatchFunction
-        get() = { dispatchable: Dispatchable ->
-            when (dispatchable) {
-                is Action -> dispatchAction(dispatchable)
-                is Effect -> dispatchEffect(dispatchable)
-            }
-        }
-
+    // make sure dispatches go through the parent
+    override val dispatchFunction: DispatchFunction = parentDispatchFunction
     override fun dispatch(dispatchable: Dispatchable) = dispatchFunction(dispatchable)
+
+    // the parent will call back into the [delegateDispatchFunction]
+    internal val delegateDispatchFunction: DispatchFunction = { dispatchable: Dispatchable ->
+        when (dispatchable) {
+            is Action -> dispatchAction(dispatchable)
+            is Effect -> dispatchEffect(dispatchable)
+        }
+    }
 
     internal val subscriptions: MutableList<SubscriptionBox<State, Any>> = CopyOnWriteArrayList()
     internal val listeners: MutableList<ListenerBox<*>> = CopyOnWriteArrayList()
@@ -79,7 +67,7 @@ class Store<State>(
         if (state != null) {
             this._state = state
         } else {
-            this.dispatch(ReKotlinInit())
+            this.delegateDispatchFunction(ReKotlinInit)
         }
     }
 
@@ -92,13 +80,9 @@ class Store<State>(
     ) {
         unsubscribe(subscriber)
 
-        val actualSelector = if (skipRepeats) {
-            compose(selector, Subscription<SelectedState>::skipRepeatsTransform)
-        } else {
-            selector
-        }
+        val actualSelector = compose(selector, Subscription<SelectedState>::skipRepeatsTransform)
 
-        val box = SubscriptionBox(Subscription(), actualSelector, subscriber)
+        val box = SubscriptionBox(actualSelector, subscriber)
 
         // each subscriber has its own potentially different SelectedState that doesn't have to conform to StateType
         @Suppress("UNCHECKED_CAST")
@@ -116,10 +100,10 @@ class Store<State>(
         }
     }
 
-    private var isDispatching = false
+    private var noInterruptionsPlease = false
 
     private fun <T> noInterruptions(work: () -> T): T {
-        if (isDispatching) {
+        if (noInterruptionsPlease) {
             throw Exception(
                     "ReKotlin:ConcurrentMutationError - " +
                             "Action has been dispatched while a previous action is being processed. " +
@@ -128,12 +112,13 @@ class Store<State>(
             )
         }
 
-        this.isDispatching = true
+        this.noInterruptionsPlease = true
         val newState = work()
-        this.isDispatching = false
+        this.noInterruptionsPlease = false
 
         return newState
     }
+
     private fun defaultDispatch(dispatchable: Dispatchable) =
             when (dispatchable) {
                 is Action -> _state = noInterruptions { reducer(dispatchable, _state) }
@@ -156,18 +141,3 @@ class Store<State>(
         listeners.add(ListenerBox(listener, selector))
     }
 }
-
-internal class ListenerBox<E: Effect>(
-        val listener: Listener<E>,
-        private val selector: (Effect) -> E?
-): Listener<Effect> {
-    override fun onEffect(effect: Effect) {
-        selector(effect)?.let { listener.onEffect(it) }
-    }
-}
-
-private fun <T> Subscription<T>.skipRepeatsTransform(): Subscription<T> = this.skipRepeats()
-private fun <T> stateIdentity(sub: Subscription<T>) = sub
-private fun <T: Effect> effectIdentity(effect: T) = effect
-
-private fun <T, S> compose(first: T.() -> S, second: S.() -> S): T.() -> S = { first().second() }

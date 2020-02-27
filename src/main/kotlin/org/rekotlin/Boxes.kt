@@ -1,3 +1,5 @@
+package org.rekotlin
+
 /**
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -19,35 +21,31 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.rekotlin
-
-import org.junit.jupiter.api.Test
-
-internal class StoreTests {
-
-    /**
-     * it dispatches an Init action when it doesn't receive an initial state
-     */
-    @Test
-    fun testInit() {
-        val reducer = MockReducer()
-        ParentStore(reducer::handleAction, null)
-
-        assert(reducer.calledWithAction[0] is ReKotlinInit)
+internal class ListenerBox<E: Effect>(
+        val listener: Listener<E>,
+        private val selector: (Effect) -> E?
+): Listener<Effect> {
+    override fun onEffect(effect: Effect) {
+        selector(effect)?.let { listener.onEffect(it) }
     }
-
-    // testDeinit() is not relevant in JVM
 }
 
-internal data class CounterState(var count: Int = 0)
+/**
+ * A box around subscriptions and subscribers.
+ *
+ * Acts as a type-erasing wrapper around a subscription and its transformed subscription.
+ * The transformed subscription has a type argument that matches the selected sub state of the
+ * subscriber; however that type cannot be exposed to the store.
+ */
+internal class SubscriptionBox<State, SelectedState>(
+        transform: Subscription<State>.() -> Subscription<SelectedState>,
+        internal val subscriber: Subscriber<SelectedState>
+) {
+    private val subscription = Subscription<State>()
 
-internal class MockReducer {
-
-    val calledWithAction: MutableList<Action> = mutableListOf()
-
-    fun handleAction(action: Action, state: CounterState?): CounterState {
-        calledWithAction.add(action)
-
-        return state ?: CounterState()
+    init {
+        subscription.transform().observe { _, newState -> subscriber.newState(newState) }
     }
+
+    internal fun newValues(old: State?, new: State) = subscription.newValues(old, new)
 }

@@ -1,7 +1,4 @@
 /**
- * Created by Taras Vozniuk on 10/08/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -42,22 +39,22 @@ class SubscriberTests {
 
     @Test
     fun `should allow to select substate`() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriber<Int?>()
         store.subscribe(subscriber) { select { number } }
 
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(3, subscriber.lastState)
     }
 
     @Test
     fun `should allow to select substate, even if it's null`() {
-        val store = Store(::intReducer, IntState())
+        val store = ParentStore(::intReducer, IntState())
         val subscriber = FakeSubscriber<Int?>()
         store.subscribe(subscriber) { select { number } }
 
-        store.dispatch(SetIntAction(null))
+        store.dispatch(IntAction(null))
 
         assertEquals(null, subscriber.lastState)
     }
@@ -73,7 +70,7 @@ class SubscriberTests {
         val oldState = state ?: ComplexAppState()
 
         return when (action) {
-            is SetIntAction -> oldState.copy(number = action.value)
+            is IntAction -> oldState.copy(number = action.value)
             is SetOtherStateAction -> oldState.copy(other = action.otherState)
             else -> oldState
         }
@@ -86,7 +83,7 @@ class SubscriberTests {
      */
     @Test
     fun `should allow to select sub state from complex app state`() {
-        val store = Store(::complexAppStateReducer, ComplexAppState())
+        val store = ParentStore(::complexAppStateReducer, ComplexAppState())
         val subscriber = FakeSubscriber<Pair<Int?, String?>>()
 
         store.subscribe(subscriber) {
@@ -95,7 +92,7 @@ class SubscriberTests {
             }
         }
 
-        store.dispatch(SetIntAction(5))
+        store.dispatch(IntAction(5))
         store.dispatch(SetOtherStateAction(OtherState("TestName", 99)))
 
 
@@ -107,81 +104,81 @@ class SubscriberTests {
 
     @Test
     fun `should not notify subscriber for unchanged substate when using skipRepeats "manually"`() {
-        val store = Store(::intReducer, IntState(3))
+        val store = ParentStore(::intReducer, IntState(3))
         val subscriber = FakeSubscriber<Int?>()
 
         store.subscribe(subscriber) {
             select { number }.skipRepeats { old, new -> old == new }
         }
 
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun `should not notify subscriber for unchanged substate when using the built in skipRepeats`() {
-        val store = Store(::intReducer, IntState(3))
+        val store = ParentStore(::intReducer, IntState(3))
         val subscriber = FakeSubscriber<Int?>()
 
         store.subscribe(subscriber) { select { number }.skipRepeats() }
 
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun `should not notify subscriber for unchanged substate when using the default skiptRepeats`() {
-        val store = Store(::intReducer, IntState(3), skipRepeats = true)
+        val store = ParentStore(::intReducer, IntState(3), skipRepeats = true)
         val subscriber = FakeSubscriber<Int?>()
 
         store.subscribe(subscriber) { select { number } }
 
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun `should skips repeated state updates for equatable state by default`() {
-        val store = Store(::stringReducer, StringState())
+        val store = ParentStore(::stringReducer, StringState())
         val subscriber = FakeSubscriber<StringState>()
 
         store.subscribe(subscriber)
 
-        store.dispatch(SetStringAction("Initial"))
-        store.dispatch(SetStringAction("Initial"))
+        store.dispatch(StringAction("Initial"))
+        store.dispatch(StringAction("Initial"))
 
         assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun `should skips repeated state updates for equatable selected sub-state by default`() {
-        val store = Store(::intReducer, IntState(3))
+        val store = ParentStore(::intReducer, IntState(3))
         val subscriber = FakeSubscriber<Int?>()
 
         store.subscribe(subscriber) { select { number } }
 
-        store.dispatch(SetIntAction(3))
-        store.dispatch(SetIntAction(3))
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(3))
 
         assertEquals(1, subscriber.callCount)
     }
 
     @Test
     fun testPassesOnDuplicateStateUpdatesInCustomizedStore() {
-        val store = Store(::stringReducer, StringState(), skipRepeats = false)
+        val store = ParentStore(::stringReducer, StringState(), skipRepeats = false)
         val subscriber = FakeSubscriber<StringState>()
 
         store.subscribe(subscriber)
 
         assertEquals("Initial", subscriber.lastState?.name)
 
-        store.dispatch(SetStringAction("Initial"))
+        store.dispatch(StringAction("Initial"))
 
         assertEquals("Initial", subscriber.lastState?.name)
         assertEquals(2, subscriber.callCount)
@@ -190,7 +187,7 @@ class SubscriberTests {
     @Test
     fun testSkipWhen() {
         val state = TestCustomAppState(5)
-        val store = Store(::customAppStateReducer, state)
+        val store = ParentStore(::customAppStateReducer, state)
         val subscriber = FakeSubscriber<SubState>()
 
         store.subscribe(subscriber) {
@@ -200,7 +197,7 @@ class SubscriberTests {
 
         assertEquals(5, subscriber.lastState?.value)
 
-        store.dispatch(SetCustomSubStateAction(5))
+        store.dispatch(CustomSubStateAction(5))
 
         assertEquals(5, subscriber.lastState?.value)
         assertEquals(1, subscriber.callCount)
@@ -209,7 +206,7 @@ class SubscriberTests {
     @Test
     fun testOnlyWhen() {
         val state = TestCustomAppState(5)
-        val store = Store(::customAppStateReducer, state)
+        val store = ParentStore(::customAppStateReducer, state)
         val subscriber = FakeSubscriber<SubState>()
 
         store.subscribe(subscriber) {
@@ -219,7 +216,7 @@ class SubscriberTests {
 
         assertEquals(5, subscriber.lastState?.value)
 
-        store.dispatch(SetCustomSubStateAction(5))
+        store.dispatch(CustomSubStateAction(5))
 
         assertEquals(5, subscriber.lastState?.value)
         assertEquals(1, subscriber.callCount)

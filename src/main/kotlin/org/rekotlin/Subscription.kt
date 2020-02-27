@@ -21,25 +21,6 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/**
- * A box around subscriptions and subscribers.
- *
- * Acts as a type-erasing wrapper around a subscription and its transformed subscription.
- * The transformed subscription has a type argument that matches the selected sub state of the
- * subscriber; however that type cannot be exposed to the store.
- */
-internal class SubscriptionBox<State, SelectedState>(
-        private val subscription: Subscription<State>,
-        transform: Subscription<State>.() -> Subscription<SelectedState>,
-        internal val subscriber: Subscriber<SelectedState>
-) {
-    init {
-        subscription.transform().observe { _, newState -> subscriber.newState(newState) }
-    }
-
-    internal fun newValues(old: State?, new: State) = subscription.newValues(old, new)
-}
-
 class Subscription<State> {
 
     internal constructor()

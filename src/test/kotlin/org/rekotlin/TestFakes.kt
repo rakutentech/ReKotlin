@@ -1,7 +1,4 @@
 /**
- * Created by Taras Vozniuk on 10/08/2017.
- * Copyright © 2017 GeoThings. All rights reserved.
- *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -35,15 +32,15 @@ data class TestCustomAppState(val subState: SubState) {
 }
 
 data class NoOpAction(val unit: Unit = Unit) : Action
-data class SetIntAction(val value: Int?) : Action
-data class SetStringAction(var value: String) : Action
-data class SetCustomSubStateAction(val value: Int) : Action
+data class IntAction(val value: Int?) : Action
+data class StringAction(val value: String) : Action
+data class CustomSubStateAction(val value: Int) : Action
 
 fun intReducer(action: Action, state: IntState?): IntState {
     val oldState = state ?: IntState()
 
     return when (action) {
-        is SetIntAction -> oldState.copy(number = action.value)
+        is IntAction -> oldState.copy(number = action.value)
         else -> oldState
 
     }
@@ -53,7 +50,7 @@ fun stringReducer(action: Action, state: StringState?): StringState {
     val oldState = state ?: StringState()
 
     return when (action) {
-        is SetStringAction -> oldState.copy(name = action.value)
+        is StringAction -> oldState.copy(name = action.value)
         else -> oldState
     }
 }
@@ -62,7 +59,7 @@ fun customAppStateReducer(action: Action, state: TestCustomAppState?): TestCusto
     val oldState = state ?: TestCustomAppState()
 
     return when (action) {
-        is SetCustomSubStateAction -> oldState.copy(oldState.subState.copy(action.value))
+        is CustomSubStateAction -> oldState.copy(oldState.subState.copy(action.value))
         else -> oldState
     }
 
@@ -114,7 +111,7 @@ class DispatchingSubscriber(var store: Store<IntState>) : Subscriber<IntState> {
         // Test if we've already dispatched this action to
         // avoid endless recursion
         if (state.number != 5) {
-            this.store.dispatch(SetIntAction(5))
+            this.store.dispatch(IntAction(5))
         }
     }
 }
