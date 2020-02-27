@@ -21,123 +21,84 @@
 
 package org.rekotlin
 
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal val firstMiddleware: Middleware<Any> = { _, _ ->
-    { next ->
-        { action ->
-            (action as? StringAction)?.let {
+class MiddlewareTests {
 
-                next(StringAction("${it.value} First Middleware"))
-            } ?: next(action)
-        }
-    }
-}
+    private val decoratingMiddleware: Middleware<Any> = { _, _ ->
+        { next ->
+            { action ->
+                (action as? StringAction)?.let {
 
-internal val secondMiddleware: Middleware<Any> = { _, _ ->
-    { next ->
-        { action ->
-            (action as? StringAction)?.let {
-                next(StringAction("${it.value} Second Middleware"))
-            } ?: next(action)
-        }
-    }
-}
-
-internal val dispatchingMiddleware: Middleware<Any> = { dispatch, _ ->
-    { next ->
-        { action ->
-            (action as? IntAction)?.let {
-                dispatch(StringAction("${it.value ?: 0}"))
+                    next(IntAction(7))
+                } ?: next(action)
             }
-
-            next(action)
         }
     }
-}
 
-internal val stateAccessingMiddleware: Middleware<StringState> = { dispatch, getState ->
-    { next ->
-        { action ->
+    private val dropAllMiddleware: Middleware<Any> = { _, _ ->
+        { _ ->
+            { _ -> }
+        }
+    }
 
-            val appState = getState()
-            val stringAction = action as? StringAction
+    @Test
+    fun `should modify actions before they reach the reducer`() {
+        val reducer = FakeReducer(StringState())
+        val store = store(reducer, StringState(), decoratingMiddleware)
+        val action = StringAction("OK")
 
-            // avoid endless recursion by checking if we've dispatched exactly this action
-            if (appState?.name == "OK" && stringAction?.value != "Not OK") {
-                // dispatch a new action
-                dispatch(StringAction("Not OK"))
+        store.dispatch(action)
 
-                // and swallow the current one
-                dispatch(NoOpAction())
-            } else {
+        assert(action != reducer.lastAction)
+    }
+
+    @Test
+    fun `should be able to drop actions`() {
+        val reducer = FakeReducer(StringState())
+        val store = store(reducer, StringState(), dropAllMiddleware)
+        val action = StringAction("OK")
+
+        store.dispatch(action)
+        store.dispatch(action)
+        store.dispatch(action)
+
+        assert(reducer.actions.isEmpty())
+    }
+
+    private val initializingMiddleware: Middleware<StringState> = { dispatch, getState ->
+        { next ->
+            { action ->
+                val state = getState()
+
+                if (action !is StringAction && (state == null || state.name == "initial")) {
+                    dispatch(StringAction("Initialized!"))
+                }
                 next(action)
             }
         }
     }
-}
 
-internal class StoreMiddlewareTests {
-
-    /**
-     * it can decorate dispatch function
-     */
     @Test
-    fun testDecorateDispatch() {
+    fun `should be able to execute conditional logic based on reading state`() {
+        val reducer = FakeReducer(StringState("")) { a, s ->
+            val state = s ?: StringState()
 
-        val store = ParentStore(
-            reducer = ::stringReducer,
-            state = StringState(),
-            middleware = listOf(firstMiddleware, secondMiddleware)
-        )
+            if (a is StringAction) {
+                state.copy(name = a.value)
+            } else {
+                state
+            }
+        }
+        val store = store(reducer, StringState("initial"), initializingMiddleware)
+        val baseline = reducer.actions.size
 
-        val subscriber = FakeSubscriberWithHistory<StringState>()
-        store.subscribe(subscriber)
+        store.dispatch(TestAction)
 
-        val action = StringAction("OK")
-        store.dispatch(action)
+        assert(reducer.actions.size == baseline + 2) // dispatched additional action based on state
 
-        assertEquals("OK First Middleware Second Middleware", store.state.name)
-    }
+        store.dispatch(TestAction)
 
-    /**
-     * it can dispatch actions
-     */
-    @Test
-    fun testCanDispatch() {
-
-        val store = ParentStore(
-            reducer = ::stringReducer,
-            state = StringState(),
-            middleware = listOf(firstMiddleware, secondMiddleware, dispatchingMiddleware)
-        )
-
-        val subscriber = FakeSubscriberWithHistory<StringState>()
-        store.subscribe(subscriber)
-
-        val action = IntAction(10)
-        store.dispatch(action)
-
-        assertEquals("10 First Middleware Second Middleware", store.state.name)
-    }
-
-    /**
-     * it middleware can access the store's state
-     */
-    @Test
-    fun testMiddlewareCanAccessState() {
-
-        var state = StringState()
-        state = state.copy(name = "OK")
-
-        val store = ParentStore(
-            reducer = ::stringReducer,
-            state = state,
-            middleware = listOf(stateAccessingMiddleware)
-        )
-
-        store.dispatch(StringAction("Action That Won't Go Through"))
-        assertEquals("Not OK", store.state.name)
+        assert(reducer.actions.size == baseline + 3) // no additional actions, based on changed state
     }
 }

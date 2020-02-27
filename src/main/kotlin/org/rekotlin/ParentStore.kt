@@ -23,6 +23,9 @@ import java.util.concurrent.CopyOnWriteArrayList
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+internal typealias DispatchAction = (Action) -> Unit
+internal typealias DispatchEffect = (Effect) -> Unit
+
 internal class ParentStore<State>(
         private val reducer: Reducer<State>,
         state: State?,

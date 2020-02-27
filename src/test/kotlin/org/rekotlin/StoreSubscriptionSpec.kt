@@ -21,196 +21,217 @@
 
 package org.rekotlin
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class StoreSubscriptionTests {
+class StoreSubscriptionTests {
 
-    // this is not going to work in JVM.
-    // WeakReference also can't solve it since gc collects non-deterministically
-    // TODO: Discuss with ReSwift community for this inconsistency
-    /*
-    /**
-     * It does not strongly capture an observer
-     */
     @Test
-    fun testStrongCapture(){
-        store = Store(reducer::handleAction, TestAppState())
-        var subscriber: TestSubscriber? = TestSubscriber()
+    fun `should notify subscriber of state changes after subscribing`() {
+        val store = store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<IntState>()
+        store.subscribe(subscriber)
+        val baseline = subscriber.callCount
 
-        store.subscribe(subscriber!!)
-        assertEquals(1, store.subscriptions.map { it.subscriber != null }.count())
+        store.dispatch(IntAction(333))
 
-        @Suppress("UNUSED_VALUE")
-        subscriber = null
-        assertEquals(0, store.subscriptions.map { it.subscriber != null }.count())
+        assert(subscriber.callCount == baseline + 1)
+        assert(subscriber.lastState?.number == 333)
+
+        store.dispatch(IntAction(1337))
+
+        assert(subscriber.callCount == baseline + 2)
+        assert(subscriber.lastState?.number == 1337)
     }
-    */
 
-    /**
-     * it removes subscribers before notifying state changes
-     */
     @Test
-    fun testRemoveSubscribers() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber1 = FakeSubscriberWithHistory<IntState>()
-        val subscriber2 = FakeSubscriberWithHistory<IntState>()
+    fun `should prevent duplicate subscriber silently`() {
+        val store = store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<IntState>()
+        store.subscribe(subscriber)
+        store.subscribe(subscriber)
 
-        store.subscribe(subscriber1)
-        store.subscribe(subscriber2)
-        store.dispatch(IntAction(3))
-        assertEquals(2, store.subscriptions.count())
-        assertEquals(3, subscriber1.states.lastOrNull()?.number)
-        assertEquals(3, subscriber2.states.lastOrNull()?.number)
+        val callCount = subscriber.callCount
 
-        // dereferencing won't remove the subscriber(like in ReSwift)
-        // subscriber1 = null
-        store.unsubscribe(subscriber1)
-        store.dispatch(IntAction(5))
-        assertEquals(1, store.subscriptions.count())
-        assertEquals(5, subscriber2.states.lastOrNull()?.number)
+        store.dispatch(IntAction(333))
 
-        // dereferencing won't remove the subscriber(like in ReSwift)
-        // subscriber1 = null
-        store.unsubscribe(subscriber2)
-        store.dispatch(IntAction(8))
-        assertEquals(0, store.subscriptions.count())
+        assert(subscriber.callCount == callCount + 1)
+    }
+
+    @Test
+    fun `should prevent duplicate subscriber silently with substate selectors`() {
+        val store = store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<Int?>()
+        store.subscribe(subscriber) { select { number } }
+        store.subscribe(subscriber) { select { number } }
+
+        val callCount = subscriber.callCount
+
+        store.dispatch(IntAction(333))
+
+        assert(subscriber.callCount == callCount + 1)
     }
 
     /**
      * it replaces the subscription of an existing subscriber with the new one.
      */
     @Test
-    fun testDuplicateSubscription() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber = FakeSubscriberWithHistory<IntState>()
-
-        // initial subscription
+    fun `should prevent duplicate subscriber silently even when subscribing with and without state selector`() {
+        val store = store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<IntState>()
         store.subscribe(subscriber)
-        // Subsequent subscription that skips repeated updates.
         store.subscribe(subscriber) { skipRepeats { oldState, newState -> oldState.number == newState.number } }
+        val callCount = subscriber.callCount
 
-        // One initial state update for every subscription.
-        assertEquals(2, subscriber.states.count())
+        store.dispatch(IntAction(1))
 
-        store.dispatch(IntAction(3))
-        store.dispatch(IntAction(3))
-        store.dispatch(IntAction(3))
-        store.dispatch(IntAction(3))
-
-        assertEquals(3, subscriber.states.count())
+        assert(subscriber.callCount == callCount + 1) // still only subscribed once
     }
 
-    /**
-     * it dispatches initial value upon subscription
-     */
     @Test
-    fun testDispatchInitialValue() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber = FakeSubscriberWithHistory<IntState>()
-
+    fun `should skip repeats automatically`() {
+        val store = store(::intReducer, IntState())
+        val subscriber = FakeSubscriber<IntState>()
         store.subscribe(subscriber)
-        store.dispatch(IntAction(3))
+        val action = IntAction(777)
+        store.dispatch(action)
+        val callCount = subscriber.callCount
 
-        assertEquals(3, subscriber.states.lastOrNull()?.number)
+        // dispatching actions should be idempotent
+        store.dispatch(action)
+        store.dispatch(action)
+        store.dispatch(action)
+
+        // no state change, therefore no more calls
+        assert(subscriber.callCount == callCount)
+
     }
 
-    /**
-     * it allows dispatching from within an observer
-     */
     @Test
-    fun testAllowDispatchWithinObserver() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber = DispatchingSubscriber(store)
+    fun `should pass initial state to subscriber upon subscribing`() {
+        val initalState = IntState(1723)
+        val store = store(::intReducer, initalState)
+        val subscriber = FakeSubscriber<IntState>()
 
         store.subscribe(subscriber)
+
+        assertTrue(subscriber.lastState == initalState)
+    }
+
+    @Test
+    fun `should pass initial state to subscriber upon subscribing, even if store was initialized with null state`() {
+        val initalState = null
+        val store = store(::intReducer, initalState)
+        val subscriber = FakeSubscriber<IntState>()
+
+        store.subscribe(subscriber)
+
+        assert(subscriber.callCount == 1)
+    }
+
+    @Test
+    fun `should allow to dispatch from a subscriber callback`() {
+        val store = ParentStore(::intReducer, IntState())
+        val subscriber = subscriber<IntState> { state ->
+            // Test if we've already dispatched this action to
+            // avoid endless recursion
+            if (state.number != 5) {
+                store.dispatch(IntAction(5))
+            }
+        }
+        store.subscribe(subscriber)
+
         store.dispatch(IntAction(2))
 
-        assertEquals(5, store.state.number)
+        assert(store.state.number == 5)
     }
 
-    /**
-     * it does not dispatch value after subscriber unsubscribes
-     */
     @Test
-    fun testDontDispatchToUnsubscribers() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber = FakeSubscriberWithHistory<IntState>()
+    fun `should not notify subscriber after unsubscribe`() {
+        val store = store(::intReducer, IntState(0))
+        val subscriber = FakeSubscriber<IntState>()
+        store.subscribe(subscriber)
 
+        store.dispatch(IntAction(1))
+        store.dispatch(IntAction(2))
+        store.unsubscribe(subscriber)
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(4))
+
+        assert(subscriber.history.map { it.number } == listOf(0, 1, 2))
+    }
+
+    @Test
+    fun `should allow to re-subscribe after unsubscribe`() {
+        val store = store(::intReducer, IntState(0))
+        val subscriber = FakeSubscriber<IntState>()
+        store.subscribe(subscriber)
+
+        store.dispatch(IntAction(1))
+        store.dispatch(IntAction(2))
+        store.unsubscribe(subscriber)
+        store.dispatch(IntAction(3))
+        store.dispatch(IntAction(4))
         store.dispatch(IntAction(5))
         store.subscribe(subscriber)
-        store.dispatch(IntAction(10))
+        store.dispatch(IntAction(6))
 
-        store.unsubscribe(subscriber)
-        // Following value is missed due to not being subscribed:
-        store.dispatch(IntAction(15))
-        store.dispatch(IntAction(25))
+        assert(subscriber.history.map { it.number } == listOf(0, 1, 2, 5, 6))
+    }
+
+    @Test
+    fun `should allow to subscribe new subscriber during new state callback to subscriber`() {
+        val store = store(::stringReducer, StringState("initial"))
+        val subOne = FakeSubscriber<StringState>()
+        val subTwo = FakeSubscriber<StringState> { store.subscribe(subOne) }
+
+        store.subscribe(subTwo)
+
+        assert(subOne.callCount == 1)
+        assert(subTwo.callCount == 1)
+
+        // implicitly test this doesn't crash
+    }
+
+    class SelfUnSubscriber<T>(private val store: SubscribeStore<T>) : Subscriber<T> {
+        val callCount get() = _callCount
+        var _callCount = 0
+        override fun newState(state: T) {
+            _callCount += 1
+            store.unsubscribe(this)
+        }
+    }
+
+    @Test
+    fun `should allow to unsubscribe during new state callback`() {
+        val store = store(::stringReducer, StringState("initial"))
+        val subscriber = SelfUnSubscriber(store)
 
         store.subscribe(subscriber)
-        store.dispatch(IntAction(20))
 
-        assertEquals(4, subscriber.states.count())
-        assertEquals(5, subscriber.states[subscriber.states.count() - 4].number)
-        assertEquals(10, subscriber.states[subscriber.states.count() - 3].number)
-        assertEquals(25, subscriber.states[subscriber.states.count() - 2].number)
-        assertEquals(20, subscriber.states[subscriber.states.count() - 1].number)
+        store.dispatch(StringAction(""))
+        store.dispatch(StringAction(""))
+        store.dispatch(StringAction(""))
+
+        assert(subscriber.callCount == 1)
     }
 
-    /**
-     * it ignores identical subscribers
-     */
-    @Test
-    fun testIgnoreIdenticalSubscribers() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber = FakeSubscriberWithHistory<IntState>()
-
-        store.subscribe(subscriber)
-        store.subscribe(subscriber)
-
-        assertEquals(1, store.subscriptions.count())
-    }
-
-    /**
-     * it ignores identical subscribers that provide substate selectors
-     */
-    @Test
-    fun testIgnoreIdenticalSubstateSubscribers() {
-        val store = ParentStore(::intReducer, IntState())
-        val subscriber = FakeSubscriberWithHistory<IntState>()
-
-        store.subscribe(subscriber) { this }
-        store.subscribe(subscriber) { this }
-
-        assertEquals(1, store.subscriptions.count())
+    class SelfSubscriber<T>(private val store: SubscribeStore<T>) : Subscriber<T> {
+        override fun newState(state: T) {
+            store.subscribe(this)
+        }
     }
 
     @Test
-    fun testSubscribeDuringOnNewState() {
-        // setup
-        val store = ParentStore(::stringReducer, StringState())
+    fun `should not allow to re-subscribe oneself in new state callback to subscriber`() {
+        val store = store(::stringReducer, StringState("initial"))
+        val subscribre = SelfSubscriber(store)
 
-        val subscribeA = ViewSubscriberTypeA(store)
-        store.subscribe(subscribeA)
-
-        // execute
-        store.dispatch(StringAction("subscribe"))
-
-        // no crash
-    }
-
-    @Test
-    fun testUnSubscribeDuringOnNewState() {
-        // setup
-        val store = ParentStore(reducer = ::stringReducer, state = StringState())
-
-        val subscriberA = ViewSubscriberTypeA(store)
-        val subscriberC = ViewSubscriberTypeC()
-        store.subscribe(subscriberA)
-        store.subscribe(subscriberC)
-
-        // execute
-        store.dispatch(StringAction("unsubscribe"))
-
-        // no crash
+        try {
+            store.subscribe(subscribre)
+            fail<Any>("expected stack overflow")
+        } catch (e: StackOverflowError) {
+            assertNotNull(e)
+        }
     }
 }
