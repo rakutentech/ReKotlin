@@ -56,7 +56,7 @@ internal class EffectTest {
 
     @Test
     fun `should subscribe listeners`() {
-        val listener = TestListener { _: Effect -> }
+        val listener = TestListener<Effect> { }
         store.subscribe(listener)
 
         assertEquals(1, store.listeners.count())
@@ -64,7 +64,7 @@ internal class EffectTest {
 
     @Test
     fun `should register a listener only once`() {
-        val listener = TestListener { _: Effect -> }
+        val listener = TestListener<Effect> { }
 
         store.subscribe(listener)
         store.subscribe(listener)
@@ -75,7 +75,7 @@ internal class EffectTest {
     @Test
     fun `should dispatch effects to listeners`() {
         var effect: Effect? = null
-        val listener = TestListener { e: Effect -> effect = e}
+        val listener = TestListener<Effect> { effect = it }
         store.subscribe(listener)
 
         store.dispatch(TestEffect)
@@ -86,7 +86,7 @@ internal class EffectTest {
     @Test
     fun `should unsubscribe listener`() {
         var effect: Effect? = null
-        val listener = TestListener { e: Effect -> effect = e}
+        val listener = TestListener<Effect> { effect = it }
         store.subscribe(listener)
 
         store.unsubscribe(listener)
@@ -97,7 +97,7 @@ internal class EffectTest {
 
     @Test
     fun `should subscribe listener with selector` () {
-        val listener = TestListener { _: TestEffect -> }
+        val listener = TestListener<TestEffect> { }
 
         store.subscribe(listener) { it as? TestEffect }
 
@@ -106,7 +106,7 @@ internal class EffectTest {
 
     @Test
     fun `should unsubscribe listener that subscribed with selector` () {
-        val listener = TestListener { _: TestEffect -> }
+        val listener = TestListener<TestEffect> { }
         store.subscribe(listener) { it as? TestEffect }
 
         store.unsubscribe(listener)
@@ -117,7 +117,7 @@ internal class EffectTest {
     @Test
     fun `should not pass effects that were not selected by the selector` () {
         var effect: Effect? = null
-        val listener = TestListener { e: TestEffect -> effect = e}
+        val listener = TestListener<TestEffect> { effect = it }
         store.subscribe(listener) { it as? TestEffect }
 
         store.dispatch(TestEffect2)
@@ -127,8 +127,8 @@ internal class EffectTest {
 
     @Test
     fun `should only pass effects that are selected by the selector` () {
-        var effects: MutableList<Effect> = mutableListOf()
-        val listener = TestListener { e: TestEffect -> effects.add(e)}
+        val effects: MutableList<Effect> = mutableListOf()
+        val listener = TestListener<TestEffect> { effects.add(it)}
         store.subscribe(listener) { it as? TestEffect }
 
         store.dispatch(TestEffect)
@@ -136,6 +136,29 @@ internal class EffectTest {
 
         assertEquals(1, effects.count())
         assertTrue(effects[0] is TestEffect)
+    }
 
+    @Test
+    fun `should allow to dispatch another effect in effect listener` () {
+        var effect: TestEffect2? = null
+        store.subscribe(TestListener { store.dispatch(TestEffect2) }) { it as? TestEffect }
+        store.subscribe(TestListener { effect = it }) { it as? TestEffect2 }
+
+        store.dispatch(TestEffect)
+
+        assertNotNull(effect)
+        // also implictily assert that this doesn't cause a failure
+    }
+
+    @Test
+    fun `should fail to dispatch the same effect in effect listener` () {
+        store.subscribe(TestListener { store.dispatch(TestEffect) }) { it as? TestEffect }
+
+        try {
+            store.dispatch(TestEffect)
+            fail<Unit>("Should Overflow!")
+        } catch (e: StackOverflowError) {
+            assertNotNull(e)
+        }
     }
 }
