@@ -21,8 +21,9 @@
 
 package org.rekotlin
 
-data class IntState(val number: Int? = null)
+import org.junit.jupiter.api.Assertions
 
+data class IntState(val number: Int? = null)
 data class StringState(val name: String = "Initial")
 
 data class SubState(val value: Int)
@@ -31,7 +32,6 @@ data class TestCustomAppState(val subState: SubState) {
     constructor(subState: Int = 0) : this(SubState(subState))
 }
 
-data class NoOpAction(val unit: Unit = Unit) : Action
 data class IntAction(val value: Int?) : Action
 data class StringAction(val value: String) : Action
 data class CustomSubStateAction(val value: Int) : Action
@@ -65,54 +65,37 @@ fun customAppStateReducer(action: Action, state: TestCustomAppState?): TestCusto
 
 }
 
-class FakeSubscriberWithHistory<T> : Subscriber<T> {
-    var states: MutableList<T> = mutableListOf()
+object TestAction: Action
+
+class FakeReducer<T>(
+        initial: T,
+        private val reduce: (Action, T?) -> T = { _, s -> s ?: initial}
+): Reducer<T> {
+    val lastAction: Action?
+        get() = _actions.lastOrNull()
+    val actions: List<Action>
+        get() = _actions
+    private val _actions: MutableList<Action> = mutableListOf()
+    override fun invoke(action: Action, state: T?): T {
+        _actions.add(action)
+        return reduce(action, state)
+    }
+}
+
+class FakeSubscriber<T>(private val block: (T) -> Unit = {}) : Subscriber<T> {
+    val lastState: T?
+            get() = _history.lastOrNull()
+    val callCount
+        get() = _history.size
+    val history: List<T>
+        get() = _history
+
+    val _history: MutableList<T> = mutableListOf()
 
     override fun newState(state: T) {
-        this.states.add(state)
+        block(state)
+        _history.add(state)
     }
 }
 
-/**
- * A subscriber contains another sub-subscribers [Subscriber], which could be subscribe/unsubscribe at some point
- */
-class ViewSubscriberTypeA(var store: Store<StringState>) : Subscriber<StringState> {
-    private val viewB by lazy { ViewSubscriberTypeB(store) }
-    private val viewC by lazy { ViewSubscriberTypeC() }
-
-    override fun newState(state: StringState) {
-        when (state.name) {
-            "subscribe" -> store.subscribe(viewC)
-            "unsubscribe" -> store.unsubscribe(viewB)
-            else -> Unit
-        }
-    }
-}
-
-class ViewSubscriberTypeB(store: Store<StringState>) : Subscriber<StringState> {
-    init {
-        store.subscribe(this)
-    }
-
-    override fun newState(state: StringState) {
-        // do nothing
-    }
-}
-
-class ViewSubscriberTypeC : Subscriber<StringState> {
-    override fun newState(state: StringState) {
-        // do nothing
-    }
-}
-
-class DispatchingSubscriber(var store: Store<IntState>) : Subscriber<IntState> {
-
-    override fun newState(state: IntState) {
-        // Test if we've already dispatched this action to
-        // avoid endless recursion
-        if (state.number != 5) {
-            this.store.dispatch(IntAction(5))
-        }
-    }
-}
-
+fun assert(condition: Boolean) = Assertions.assertTrue(condition)

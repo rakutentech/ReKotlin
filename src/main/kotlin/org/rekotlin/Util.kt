@@ -21,29 +21,6 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-//TODO read up on crossinline
-inline fun <S> subscriber(crossinline block: (S) -> Unit) = object : Subscriber<S> {
-    override fun newState(state: S) = block(state)
-}
-
-inline fun <E : Effect> listener(crossinline block: (E) -> Unit) = object : Listener<E> {
-    override fun onEffect(effect: E) = block(effect)
-}
-
-fun <State> store(
-        reducer: Reducer<State>,
-        state: State? = null,
-        vararg middleware: Middleware<State> = arrayOf()
-) : Store<State> =
-        ParentStore(reducer, state, middleware.toList(), true)
-
-fun <State> rootStore(
-        reducer: Reducer<State>,
-        state: State? = null,
-        vararg middleware: Middleware<State> = arrayOf()
-) : RootStore<State> =
-        ParentStore(reducer, state, middleware.toList(), true)
-
 /**
  * Initial Action that is dispatched as soon as the store is created.
  * Reducers respond to this action by configuring their initial state.

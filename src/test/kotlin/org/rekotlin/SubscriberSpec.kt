@@ -25,16 +25,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
-class FakeSubscriber<T> : Subscriber<T> {
-    var lastState: T? = null
-    var callCount = 0
-
-    override fun newState(state: T) {
-        lastState = state
-        callCount += 1
-    }
-}
-
 class SubscriberTests {
 
     @Test
@@ -83,7 +73,7 @@ class SubscriberTests {
      */
     @Test
     fun `should allow to select sub state from complex app state`() {
-        val store = ParentStore(::complexAppStateReducer, ComplexAppState())
+        val store = store(::complexAppStateReducer, ComplexAppState())
         val subscriber = FakeSubscriber<Pair<Int?, String?>>()
 
         store.subscribe(subscriber) {

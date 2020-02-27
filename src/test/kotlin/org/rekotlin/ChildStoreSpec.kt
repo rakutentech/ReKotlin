@@ -24,28 +24,14 @@ import org.junit.jupiter.api.Test
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class FakeReducer<T>(private val initial: T): Reducer<T> {
-    val lastAction: Action?
-        get() = if(_actions.isNotEmpty()) _actions.last() else null
-    val actions: List<Action>
-        get() = _actions
-    private val _actions: MutableList<Action> = mutableListOf()
-    override fun invoke(action: Action, state: T?): T {
-        _actions.add(action)
-        return state ?: initial
-    }
-}
-
-object TestAction: Action
-
-class ChildStoreActionsTests {
+class ParentAndChildStoreActionsTests {
     private val parentReducer = FakeReducer("")
     private val childReducer = FakeReducer(1)
 
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun `dispatching action to parent should reach parent and child`() {
-        val parent = ParentStore(parentReducer, "")
+        val parent = rootStore(parentReducer, "")
         val child = parent.childStore(childReducer, 7)
 
         parent.dispatch(TestAction)
@@ -57,7 +43,7 @@ class ChildStoreActionsTests {
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun `dispatching action to child should reach parent and child`() {
-        val parent = ParentStore(parentReducer, "default")
+        val parent = rootStore(parentReducer, "default")
         val child = parent.childStore(childReducer, 7)
 
         child.dispatch(TestAction)
@@ -68,7 +54,7 @@ class ChildStoreActionsTests {
 
     @Test
     fun `dispatching effect to parent should reach parent and child`() {
-        val parent = ParentStore(parentReducer, "default")
+        val parent = rootStore(parentReducer, "default")
         val child = parent.childStore(childReducer, 7)
 
         var parentEffect: Effect? = null
@@ -85,7 +71,7 @@ class ChildStoreActionsTests {
 
     @Test
     fun `dispatching effect to child should reach parent and child`() {
-        val parent = ParentStore(parentReducer, "default")
+        val parent = rootStore(parentReducer, "default")
         val child = parent.childStore(childReducer, 7)
 
         var parentEffect: Effect? = null
@@ -113,7 +99,7 @@ class ChildStoreActionsTests {
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun `middleware should operate on actions dispatched to parent`() {
-        val parent = ParentStore(parentReducer, "default", listOf(replacingMiddleware()))
+        val parent = rootStore(parentReducer, "default", replacingMiddleware())
         val child = parent.childStore(childReducer, 7)
 
         parent.dispatch(TestAction)
@@ -124,7 +110,7 @@ class ChildStoreActionsTests {
 
     @Test
     fun `middleware should operate on actions dispatched to child`() {
-        val parent = ParentStore(parentReducer, "default", listOf(replacingMiddleware()))
+        val parent = rootStore(parentReducer, "default", replacingMiddleware())
         val child = parent.childStore(childReducer, 7)
 
         child.dispatch(TestAction)
@@ -136,7 +122,7 @@ class ChildStoreActionsTests {
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun `should delegate actions to multiple children when dispatched to parent`() {
-        val parent = ParentStore(parentReducer, "default", listOf(replacingMiddleware()))
+        val parent = rootStore(parentReducer, "default", replacingMiddleware())
         val child1 = parent.childStore(childReducer, 1)
         val child2Reducer = FakeReducer(1)
         val child3Reducer = FakeReducer(1)
@@ -154,7 +140,7 @@ class ChildStoreActionsTests {
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun `should delegate actions to multiple children when dispatched to a child`() {
-        val parent = ParentStore(parentReducer, "default", listOf(replacingMiddleware()))
+        val parent = rootStore(parentReducer, "default", replacingMiddleware())
         val child1 = parent.childStore(childReducer, 1)
         val child2Reducer = FakeReducer(1)
         val child3Reducer = FakeReducer(1)
@@ -186,7 +172,7 @@ class ChildStoreActionsTests {
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun `creating child store without initial state should dispatch init action to child store`() {
-        val parent = ParentStore(parentReducer, "")
+        val parent = rootStore(parentReducer, "")
         val child = parent.childStore(childReducer)
 
         assert(parentReducer.actions.isEmpty())
@@ -196,8 +182,19 @@ class ChildStoreActionsTests {
 
     @Test
     @Suppress("UNUSED_VARIABLE")
+    fun `creating child store with operator should be equivalent to creating an child store with null child state`() {
+        val parent = rootStore(parentReducer, "")
+        val child = parent + childReducer
+
+        assert(parentReducer.actions.isEmpty())
+        assert(childReducer.actions.size == 1)
+        assert(childReducer.lastAction is ReKotlinInit)
+    }
+
+    @Test
+    @Suppress("UNUSED_VARIABLE")
     fun `creating child store with initial state should not dispatch any action to any store`() {
-        val parent = ParentStore(parentReducer, "")
+        val parent = rootStore(parentReducer, "")
         val child = parent.childStore(childReducer, 7)
 
         assert(parentReducer.actions.isEmpty())

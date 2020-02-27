@@ -47,12 +47,16 @@ interface Action : Dispatchable
  */
 interface Effect : Dispatchable
 
+/**
+ * A function that produces the next state, based on the previous state and an incoming [Action].
+ */
 typealias Reducer<State> = (action: Action, state: State?) -> State
-
-typealias DispatchAction = (Action) -> Unit
-
-typealias DispatchEffect = (Effect) -> Unit
-
+/**
+ * A function that dispatches an [Action] or [Effect].
+ *
+ * You typically get one of these from [Store.dispatchFunction], it may be useful for dependency
+ * injection.
+ */
 typealias DispatchFunction = (Dispatchable) -> Unit
 
 /**
@@ -82,15 +86,20 @@ interface Listener<Effect> {
     fun onEffect(effect: Effect)
 }
 
+/**
+ * A Store that allows to dispatch actions to it.
+ *
+ * This can be a helpful facade to hide the [SubscribeStore] functionality.
+ */
 interface DispatchStore {
     /**
      * Dispatch an [Action] or [Effect] to the store.
      *
-     * An Action is the simplest way to initiate [State] changes.
+     * An Action is the simplest way to initiate state changes.
      * This passes the action to [Middleware], delegates to the [Reducer] to determine the new state.
      * and eventually notifies [Subscriber]s of (sub-)state changes (if any).
      *
-     * Effects are one time events that do not change the [State].
+     * Effects are one time events that do not change the state.
      * This notifies all [Effect] listeners.
      *
      * This <b>will not</b> pass anything to [Middleware], delegate to [Reducer] or change state.
@@ -119,6 +128,11 @@ interface DispatchStore {
     val dispatchFunction: DispatchFunction
 }
 
+/**
+ * A store that allows subscribing to its state changes.
+ *
+ * This can be a helpful facade to hide the [DispatchStore] functionality.
+ */
 interface SubscribeStore<State> {
     /**
      * Subscribes the state changes of this store.
@@ -181,6 +195,52 @@ interface SubscribeStore<State> {
     fun <E: Effect> unsubscribe(listener: Listener<E>)
 }
 
+/**
+ * A root store that can spawn child stores.
+ *
+ * Children can bootstrap from the root store without the root knowing the children at compile time.
+ *
+ * This is useful when an application is structured like a tree, with a single root module, that
+ * owns shared state used by other features, for example in the diagram below
+ *
+ * <pre>
+ * +---+ +---+ +---+
+ * | F | | F | | F |
+ * | e | | e | | e |
+ * | a | | a | | a |
+ * | t | | t | | t |
+ * |   | |   | |   |
+ * | 1 | | 2 | | 3 |
+ * +---+ +---+ +---+
+ * +---------------+
+ * |     Root      |
+ * +---------------+
+ * </pre>
+ *
+ * Root, feature 1, feature 2 and feature 3 can be different gradle modules, with the features
+ * depending on the root. If the root injects a [RootStore] into the feature modules, each feature
+ * can use [RootStore.childStore] or [RootStore.plus] to create its own child store.
+ *
+ * <code>
+ *     val rootStore: RootStore<RootState> = ... // dependency injection however you like
+ *     val featureStore: Store<Pair<RootState, FeatureState>> =
+ *              rootStore.childStore(::childReducer, initialChildState)
+ *     // or shorthand (without initial state) you can use the `+` operator
+ *     val featureStore: Store<Pair<RootState, FeatureState>> = rootStore + ::childReducer
+ * </code>
+ *
+ * Any [Action] or [Effect] dispatched to a child will pass through the parent and all its children.
+ * Any [Action] or [Effect] dispatched to the parent will pass trhough the parent and all its children.
+ *
+ * Subscribers to child stores only see the local view of root state + child state, not the global
+ * application state.
+ *
+ * Subscribers to the root store only see the root state.
+ *
+ * A limitation of child stores is that they don't have their own middlewares. You have to
+ * declare all [Middleware]s in the root store, all [Action]s passed to any of the stores (parent or
+ * child) will pass through the root store's [Middleware]s before reaching any reducers.
+ */
 interface RootStore<State>: Store<State> {
     operator fun <ChildState> plus(childReducer: Reducer<ChildState>) = childStore(childReducer)
 
@@ -191,10 +251,27 @@ interface RootStore<State>: Store<State> {
 }
 
 /**
- * Defines the interface of Stores in ReKotlin. `Store` is the default implementation of this
- * interface. Applications have a single store that stores the entire application state.
- * Stores receive actions and use reducers combined with these actions, to calculate state changes.
- * Upon every state update a store informs all of its subscribers.
+ * The [Store] contract, it is the central piece of Redux.
+ *
+ * The store maintains the application state. State changes are initiated by [Store.dispatch]ing
+ * [Action]s. State transitions are executed by [Reducer]s, the application can observe the state
+ * changes by [Store.subscribe]ing [Subscriber]s to it.
+ *
+ * In addition to state the [Store] allows to dispatch and listen for [Effect]s.
+ * [Effect]s are similar to [Action]s, but the key difference is that they do not trigger state
+ * changes. They are intended to implement ephemeral events such a animations, snackbars, toasts etc.
+ * To listen for [Effect]s implement [Listener] and [Store.subscribe] it.
+ * To dispatch effects use [Store.dispatch].
+ *
+ * [Middleware]s can intercept all actions and change the application behavior fundamentally.
+ * One such example is the Thunk middleware.
+ * // TODO: move thunk to lib
+ *
+ * To create a store use the [store] function.
+ *
+ * Applications should have a single store that models the entire application state.
+ * If that is not enough for you take a look at [RootStore].
+ *
  */
 interface Store<State> : DispatchStore, SubscribeStore<State> {
 
@@ -203,3 +280,56 @@ interface Store<State> : DispatchStore, SubscribeStore<State> {
      */
     val state: State
 }
+
+/**
+ * Create subscribers on the fly, without much boilerplate.
+ *
+ * <code>
+ *     val subscriber = subscriber { state -> /* do something with the state */ }
+ *     store.subscribe(subscriber)
+ *     // .. sometime later
+ *     store.unsubscribe(subscriber)
+ * </code>
+ */
+//TODO read up on crossinline
+inline fun <S> subscriber(crossinline block: (S) -> Unit) = object : Subscriber<S> {
+    override fun newState(state: S) = block(state)
+}
+
+/**
+ * Create listeners on the fly, without much boilerplate.
+ *
+ * <code>
+ *     val listener = listener { effect -> /* do something with the effect */ }
+ *     store.subscribe(listener)
+ *     // .. sometime later
+ *     store.unsubscribe(listener)
+ * </code>
+ */
+inline fun <E : Effect> listener(crossinline block: (E) -> Unit) = object : Listener<E> {
+    override fun onEffect(effect: E) = block(effect)
+}
+
+/**
+ * Create a new store.
+ *
+ * See [Store] for more details.
+ */
+fun <State> store(
+        reducer: Reducer<State>,
+        state: State? = null,
+        vararg middleware: Middleware<State> = arrayOf()
+) : Store<State> =
+        ParentStore(reducer, state, middleware.toList(), true)
+
+/**
+ * Create a new root store.
+ *
+ * See [RootStore] for the what, when and why of it all.
+ */
+fun <State> rootStore(
+        reducer: Reducer<State>,
+        state: State? = null,
+        vararg middleware: Middleware<State> = arrayOf()
+) : RootStore<State> =
+        ParentStore(reducer, state, middleware.toList(), true)

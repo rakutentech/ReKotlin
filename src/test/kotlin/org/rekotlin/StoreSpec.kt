@@ -25,29 +25,21 @@ import org.junit.jupiter.api.Test
 
 internal class StoreTests {
 
-    /**
-     * it dispatches an Init action when it doesn't receive an initial state
-     */
     @Test
-    fun testInit() {
-        val reducer = MockReducer()
-        ParentStore(reducer::handleAction, null)
+    fun `should dispatch init action if initial state is null`() {
+        val reducer = FakeReducer<Any>("")
+        store(reducer, null)
 
-        assert(reducer.calledWithAction[0] is ReKotlinInit)
+        assert(reducer.lastAction is ReKotlinInit)
+        assert(reducer.actions.size == 1)
     }
 
-    // testDeinit() is not relevant in JVM
-}
+    @Test
+    fun `should not dispatch init action if initial state is not null`() {
+        val reducer = FakeReducer("")
+        store(reducer, "")
 
-internal data class CounterState(var count: Int = 0)
-
-internal class MockReducer {
-
-    val calledWithAction: MutableList<Action> = mutableListOf()
-
-    fun handleAction(action: Action, state: CounterState?): CounterState {
-        calledWithAction.add(action)
-
-        return state ?: CounterState()
+        assert(reducer.actions.isEmpty())
     }
 }
+
