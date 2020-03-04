@@ -21,6 +21,23 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * A subscription to the [Store].
+ *
+ * With the subscription you can select sub-states to subscribe to and define custom rules for
+ * when you want to receive (or skip) state updates.
+ *
+ * ```
+ * data class AppState(val number: Int, val title: String)
+ * val store: Store<AppState> = /* initialize */
+ * // subscribe to a substate
+ * store.subscribe(subscriber) { select { number } }
+ * // skip updates under custom conditions
+ * store.subscribe(subscriber) { skip { old, new -> old.number == new.number } }
+ * // only receive updates under custom conditions
+ * store.subscribe(subscriber) { only { old, new -> (old.number + new.number) % 2 == 0 } }
+ * ```
+ */
 class Subscription<State> {
 
     internal constructor()
@@ -39,15 +56,15 @@ class Subscription<State> {
     @Suppress("FunctionName")
     private fun <SelectedState> _select(selector: ((State) -> SelectedState)): Subscription<SelectedState> =
 
-        Subscription { selectedStateSink ->
-            /**
-             * this [observe] is in the parent Subscription<State>.
-             * it will pass the selected sub state to the child Subscription<SelectedState>.
-             */
-            this.observe { old, new ->
-                selectedStateSink(old?.let(selector), selector(new))
+            Subscription { selectedStateSink ->
+                /**
+                 * this [observe] is in the parent Subscription<State>.
+                 * it will pass the selected sub state to the child Subscription<SelectedState>.
+                 */
+                this.observe { old, new ->
+                    selectedStateSink(old?.let(selector), selector(new))
+                }
             }
-        }
 
     private var observer: ((old: State?, new: State) -> Unit)? = null
 
@@ -67,49 +84,58 @@ class Subscription<State> {
     // Public API
 
     /**
-     * Provides a subscription that selects a substate of the state of the original subscription.
+     * Select a sub-state of the the store's state.
+     *
+     * ```
+     * data class AppState(val number: Int, val title: String)
+     * val store: Store<AppState> = /* initialize */
+     *
+     * store.subscribe(numberSubscriber) { select { number } }
+     * store.subscribe(titleSubscriber) { select { title } }
+     * ```
+     *
      * @param selector A closure that maps a state to a selected substate
      */
     fun <SelectedState> select(selector: (State.() -> SelectedState)): Subscription<SelectedState> =
-        _select(selector)
+            _select(selector)
 
     /**
-     * Provides a subscription that skips certain state updates of the original subscription.
-     * @param isRepeat A closure that determines whether a given state update is a repeat and
-     * thus should be skipped and not forwarded to subscribers.
+     * Skips state under custom conditions.
      *
+     * The inverse of [only].
+     *
+     * ```
+     * data class AppState(val number: Int, val title: String)
+     * val store: Store<AppState> = /* initialize */
+     *
+     * store.subscribe(subscriber) { skip { old, new -> old.number == new.number } }
+     * ```
+     *
+     * @param condition: Determines whether to skip a state update or not.
      */
-    fun skipRepeats(isRepeat: (oldState: State, newState: State) -> Boolean): Subscription<State> =
-        Subscription { sink ->
-            observe { old, new ->
-                if (old == null || !isRepeat(old, new)) {
-                    sink(old, new)
+    fun skip(condition: (old: State, new: State) -> Boolean): Subscription<State> =
+            Subscription { sink ->
+                observe { old, new ->
+                    if (old == null || !condition(old, new)) {
+                        sink(old, new)
+                    }
                 }
             }
-        }
 
     /**
-     * Provides a subscription that skips repeated updates of the original subscription
-     * Repeated updates determined by structural equality
-     */
-    fun skipRepeats(): Subscription<State> = skipRepeats { old, new -> old == new }
-
-    /**
-     * Provides a subscription that skips certain state updates of the original subscription.
+     * Updates state only under custom conditions.
      *
-     * This is identical to `skipRepeats` and is provided simply for convenience.
-     * @param `when` A closure that determines whether a given state update is a repeat and
-     * thus should be skipped and not forwarded to subscribers.
-     */
-    fun skip(`when`: (oldState: State, newState: State) -> Boolean): Subscription<State> =
-        skipRepeats(`when`)
-
-    /**
-     * Provides a subscription that only updates for certain state changes.
+     * The inverse of [skip].
      *
-     * This is effectively the inverse of skipRepeats(:)
-     * @param `when` A closure that determines whether a given state update should notify
+     * ```
+     * data class AppState(val number: Int, val title: String)
+     * val store: Store<AppState> = /* initialize */
+     *
+     * store.subscribe(subscriber) { only { old, new -> (old.number + new.number) % 2 == 0 } }
+     * ```
+     *
+     * @param condition: Determines whether to update subscribers for a state update.
      */
-    fun only(`when`: (old: State, new: State) -> Boolean): Subscription<State> =
-        skipRepeats { old, new -> !`when`(old, new) }
+    fun only(condition: (old: State, new: State) -> Boolean): Subscription<State> =
+            skip { old, new -> !condition(old, new) }
 }

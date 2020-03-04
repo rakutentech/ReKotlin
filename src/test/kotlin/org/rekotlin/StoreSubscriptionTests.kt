@@ -21,7 +21,8 @@
 
 package org.rekotlin
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 
 class StoreSubscriptionTests {
@@ -80,7 +81,7 @@ class StoreSubscriptionTests {
         val store = store(::intReducer, IntState())
         val subscriber = FakeSubscriber<IntState>()
         store.subscribe(subscriber)
-        store.subscribe(subscriber) { skipRepeats { oldState, newState -> oldState.number == newState.number } }
+        store.subscribe(subscriber) { skip { old, new -> old.number == new.number } }
         val callCount = subscriber.callCount
 
         store.dispatch(IntAction(1))
@@ -104,7 +105,6 @@ class StoreSubscriptionTests {
 
         // no state change, therefore no more calls
         assert(subscriber.callCount == callCount)
-
     }
 
     @Test
@@ -115,7 +115,7 @@ class StoreSubscriptionTests {
 
         store.subscribe(subscriber)
 
-        assertTrue(subscriber.lastState == initalState)
+        assert(subscriber.lastState == initalState)
     }
 
     @Test

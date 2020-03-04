@@ -30,6 +30,14 @@ ReKotlin relies on a few principles:
 
 ### Quick Start
 
+First add the rekotlin dependency to your build script.
+
+```gradle
+dependencies {
+  implementation 'com.rakuten.tech.rekotlin:rekotlin:2.0.0-rc1'
+}
+```
+
 For a very simple app, that maintains a counter that can be increased and decreased, you can define the app state as following:
 
 ```kotlin
@@ -48,7 +56,7 @@ The reducer needs to handle actions to create the changed state:
 ```kotlin
 fun reducer(action: Action, oldState: AppState?): AppState {
     // if no state has been provided, create the default state
-    var state = oldState ?: 0
+    val state = oldState ?: 0
 
     return when(action){
         is IncrementAction ->  state + action.amount
@@ -64,7 +72,7 @@ To maintain our application state we need to wire it all up in a store:
 ```kotlin
 val store = store(
      reducer = ::reducer,
-     state = 7 // the inital state is optional
+     state = 7 // the initial state is optional
 )
 // or more concisely
 val store = store(::reducer)
@@ -131,12 +139,6 @@ store.subscribe(syntheticSubStateSubscriber) { appState ->
 }
 ```
 
-## Examples
-
-- [ReduxMovieExample](https://github.com/ReKotlin/ReduxMovieExample) - An application which uses an API to display movies and stores favorites into a local database.
-- [rekotlin-router-github-example](https://github.com/ReKotlin/rekotlin-router-github-example) - An application which displays user's github repositories along with authentication and navigation using [rekotlin-router](https://github.com/ReKotlin/rekotlin-router)
-- [ReKotlin-CounterExample](https://github.com/GeoThings/ReKotlin-CounterExample) - A simple counter application
-
 ## Why ReKotlin?
 
 <!-- TODO: rework this part -->
@@ -156,27 +158,6 @@ This architecture provides further benefits beyond improving your code base:
 - Stores, Reducers, Actions and extensions such as [ReKotlin Router](https://github.com/ReKotlin/rekotlin-router)  are entirely platform independent - you can easily use the same business logic and share it between apps for multiple platforms
 
 The ReKotlin tooling is still in a very early stage, but aforementioned prospects excite us and hopefully others in the community as well!
-
-## Getting Started Guide
-
-The Getting Started Guide has not yet been ported. In the meantime, please refer to original ReSwift's:
-[Getting Started Guide that describes the core components of apps built with ReSwift](http://reswift.github.io/ReSwift/master/getting-started-guide.html). 
-
-To get an understanding of the core principles we recommend reading the brilliant [redux documentation](http://redux.js.org/).
-
-## Installation
-
-```gradle
-dependencies {
-    implementation 'org.rekotlin:rekotlin:1.0.4'
-}
-```
-
-### Subscribe/Unsubscribe during `newState`
-
-Under the hood ReKotlin uses a [`CopyOnWriteArrayList`](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CopyOnWriteArrayList.html) to manage subscriptions (see [PR 29](https://github.com/ReKotlin/ReKotlin/pull/29) for more details). This implementation detail means that the number of concurrent writes to the subscriptions should be less than the number of concurrent reads.
-
-In terms of using the library this means that un/subscribing may incur a performance overhead if done during `newState` in store subscribers. We recommend to restrict this usage (concurrent write while reading subscriptions) as much as possible, i.e. avoid `subscribe` or `unsubscribe` in calls to `newState`.
 
 ## Contributing
 

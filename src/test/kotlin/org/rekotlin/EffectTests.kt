@@ -21,7 +21,9 @@
 
 package org.rekotlin
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 
 object AppState
@@ -32,11 +34,11 @@ fun reducer(action: Action, state: AppState?) = state ?: AppState
 object TestEffect : Effect
 object TestEffect2 : Effect
 
-class TestListener<E: Effect>(private val block: (E) -> Unit): Listener<E> {
+class TestListener<E : Effect>(private val block: (E) -> Unit) : Listener<E> {
     override fun onEffect(effect: E) = block(effect)
 }
 
-class SimpleSubscriber<S>(private val block: (S) -> Unit): Subscriber<S> {
+class SimpleSubscriber<S>(private val block: (S) -> Unit) : Subscriber<S> {
     override fun newState(state: S) = block(state)
 }
 
@@ -48,7 +50,7 @@ internal class EffectTest {
     fun `should not subscribe any listeners when subscribing to state`() {
         store.subscribe(SimpleSubscriber {})
 
-        assertEquals(0, store.listeners.count())
+        assert(store.listeners.count() == 0)
     }
 
     @Test
@@ -56,7 +58,7 @@ internal class EffectTest {
         val listener = TestListener<Effect> { }
         store.subscribe(listener)
 
-        assertEquals(1, store.listeners.count())
+        assert(store.listeners.count() == 1)
     }
 
     @Test
@@ -66,7 +68,7 @@ internal class EffectTest {
         store.subscribe(listener)
         store.subscribe(listener)
 
-        assertEquals(1, store.listeners.count())
+        assert(store.listeners.count() == 1)
     }
 
     @Test
@@ -93,26 +95,26 @@ internal class EffectTest {
     }
 
     @Test
-    fun `should subscribe listener with selector` () {
+    fun `should subscribe listener with selector`() {
         val listener = TestListener<TestEffect> { }
 
         store.subscribe(listener) { it as? TestEffect }
 
-        assertEquals(1, store.listeners.count())
+        assert(store.listeners.count() == 1)
     }
 
     @Test
-    fun `should unsubscribe listener that subscribed with selector` () {
+    fun `should unsubscribe listener that subscribed with selector`() {
         val listener = TestListener<TestEffect> { }
         store.subscribe(listener) { it as? TestEffect }
 
         store.unsubscribe(listener)
 
-        assertEquals(0, store.listeners.count())
+        assert(store.listeners.count() == 0)
     }
 
     @Test
-    fun `should not pass effects that were not selected by the selector` () {
+    fun `should not pass effects that were not selected by the selector`() {
         var effect: Effect? = null
         val listener = TestListener<TestEffect> { effect = it }
         store.subscribe(listener) { it as? TestEffect }
@@ -123,20 +125,20 @@ internal class EffectTest {
     }
 
     @Test
-    fun `should only pass effects that are selected by the selector` () {
+    fun `should only pass effects that are selected by the selector`() {
         val effects: MutableList<Effect> = mutableListOf()
-        val listener = TestListener<TestEffect> { effects.add(it)}
+        val listener = TestListener<TestEffect> { effects.add(it) }
         store.subscribe(listener) { it as? TestEffect }
 
         store.dispatch(TestEffect)
         store.dispatch(TestEffect2)
 
-        assertEquals(1, effects.count())
-        assertTrue(effects[0] is TestEffect)
+        assert(1 == effects.count())
+        assert(effects[0] is TestEffect)
     }
 
     @Test
-    fun `should allow to dispatch another effect in effect listener` () {
+    fun `should allow to dispatch another effect in effect listener`() {
         var effect: TestEffect2? = null
         store.subscribe(TestListener { store.dispatch(TestEffect2) }) { it as? TestEffect }
         store.subscribe(TestListener { effect = it }) { it as? TestEffect2 }
@@ -148,7 +150,7 @@ internal class EffectTest {
     }
 
     @Test
-    fun `should fail to dispatch the same effect in effect listener` () {
+    fun `should fail to dispatch the same effect in effect listener`() {
         store.subscribe(TestListener { store.dispatch(TestEffect) }) { it as? TestEffect }
 
         try {

@@ -24,13 +24,14 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 
 internal typealias DispatchAction = (Action) -> Unit
+
 internal typealias DispatchEffect = (Effect) -> Unit
 
 internal class ParentStore<State>(
-        private val reducer: Reducer<State>,
-        state: State?,
-        middleware: List<Middleware<State>> = emptyList(), // TODO this should be varargs
-        private val skipRepeats: Boolean = true
+    private val reducer: Reducer<State>,
+    state: State?,
+    middleware: List<Middleware<State>> = emptyList(), // TODO this should be varargs
+    private val skipRepeats: Boolean = true
 ) : RootStore<State> {
 
     private var _state: State? = state
@@ -48,9 +49,9 @@ internal class ParentStore<State>(
 
     @Suppress("NAME_SHADOWING")
     private val dispatchAction: DispatchAction = middleware
-        .reversed()
+            .reversed()
             .fold(this::defaultDispatch as DispatchFunction,
-                    { dispatch, middleware -> middleware(this::dispatch, this::state )(dispatch) })
+                    { dispatch, middleware -> middleware(this::dispatch, this::state)(dispatch) })
 
     private val dispatchEffect: DispatchEffect = { effect ->
         children.forEach { it(effect) }
@@ -73,13 +74,13 @@ internal class ParentStore<State>(
     private val children: MutableList<DispatchFunction> = CopyOnWriteArrayList()
 
     override fun <ChildState> childStore(
-            childReducer: Reducer<ChildState>,
-            initalChildState: ChildState?
+        childReducer: Reducer<ChildState>,
+        initialChildState: ChildState?
     ): Store<Pair<State, ChildState>> {
         val child = ChildStore(
                 dispatchFunction,
                 { a, s -> Pair(s?.first ?: state, childReducer(a, s?.second)) },
-                if (initalChildState != null) Pair(state, initalChildState) else null
+                if (initialChildState != null) Pair(state, initialChildState) else null
         )
 
         children.add(child.delegateDispatchFunction)
@@ -99,13 +100,13 @@ internal class ParentStore<State>(
             subscribe(subscriber, ::stateIdentity)
 
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
-            subscriber: S,
-            selector: Subscription<State>.() -> Subscription<SelectedState>
+        subscriber: S,
+        selector: Subscription<State>.() -> Subscription<SelectedState>
     ) {
         unsubscribe(subscriber)
 
         val actualSelector = if (skipRepeats) {
-            compose(selector, Subscription<SelectedState>::skipRepeatsTransform)
+            compose(selector, Subscription<SelectedState>::skipRepeats)
         } else {
             selector
         }
@@ -173,7 +174,7 @@ internal class ParentStore<State>(
     }
 }
 
-//private class Lock<T> : (() -> T) -> T {
+// private class Lock<T> : (() -> T) -> T {
 //    private var isDispatching = false
 //
 //    override fun invoke(work: () -> T): T {
@@ -192,4 +193,4 @@ internal class ParentStore<State>(
 //
 //        return newState
 //    }
-//}
+// }

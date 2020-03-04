@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class ParentAndChildStoreActionsTests {
+class RootStoreTests {
     private val parentReducer = FakeReducer("")
     private val childReducer = FakeReducer(1)
 
