@@ -42,7 +42,6 @@ fun intReducer(action: Action, state: IntState?): IntState {
     return when (action) {
         is IntAction -> oldState.copy(number = action.value)
         else -> oldState
-
     }
 }
 
@@ -62,15 +61,14 @@ fun customAppStateReducer(action: Action, state: TestCustomAppState?): TestCusto
         is CustomSubStateAction -> oldState.copy(oldState.subState.copy(action.value))
         else -> oldState
     }
-
 }
 
-object TestAction: Action
+object TestAction : Action
 
 class FakeReducer<T>(
-        initial: T,
-        private val reduce: (Action, T?) -> T = { _, s -> s ?: initial}
-): Reducer<T> {
+    initial: T,
+    private val reduce: (Action, T?) -> T = { _, s -> s ?: initial }
+) : Reducer<T> {
     val lastAction: Action?
         get() = _actions.lastOrNull()
     val actions: List<Action>
@@ -84,7 +82,7 @@ class FakeReducer<T>(
 
 class FakeSubscriber<T>(private val block: (T) -> Unit = {}) : Subscriber<T> {
     val lastState: T?
-            get() = _history.lastOrNull()
+        get() = _history.lastOrNull()
     val callCount
         get() = _history.size
     val history: List<T>

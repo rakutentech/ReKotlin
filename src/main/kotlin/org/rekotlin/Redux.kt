@@ -51,6 +51,7 @@ interface Effect : Dispatchable
  * A function that produces the next state, based on the previous state and an incoming [Action].
  */
 typealias Reducer<State> = (action: Action, state: State?) -> State
+
 /**
  * A function that dispatches an [Action] or [Effect].
  *
@@ -60,7 +61,7 @@ typealias Reducer<State> = (action: Action, state: State?) -> State
 typealias DispatchFunction = (Dispatchable) -> Unit
 
 /**
- * A middleware that can intercept actions that are dispatched to the store before they reach the reducers.
+ * A middleware intercepts all actions dispatched to the store before they reach the reducers.
  *
  * Middlewares have access to the previous state, can drop actions or dispatch others (potentially
  * multiple others. This makes middlewares very powerful. Any middleware will affect all actions
@@ -74,6 +75,11 @@ typealias Middleware<State> = (DispatchFunction, () -> State?) -> (DispatchFunct
  * Subscribe to the [Store] via [Store.subscribe].
  */
 interface Subscriber<State> {
+    /**
+     * Whenever the state changes the store will notify the subscriber by calling [newState].
+     *
+     * @param state: new state
+     */
     fun newState(state: State)
 }
 
@@ -83,6 +89,11 @@ interface Subscriber<State> {
  * Subscribe to the [Store] via [Store.subscribe].
  */
 interface Listener<Effect> {
+    /**
+     * Whenever an effect is dispatched the store will notify the listener by calling [onEffect].
+     *
+     * @param effect: effect to react to
+     */
     fun onEffect(effect: Effect)
 }
 
@@ -106,19 +117,18 @@ interface DispatchStore {
      *
      *
      * Example of dispatching an action:
-     * <pre>
-     * <code>
-     *     // dispatch an action
-     *     store.dispatch(CounterAction.IncreaseCounter)
-     *     // dispatch an effect
-     *     store.dispatch(AnimationEffect
-     * </code>
-     * </pre>
+     *
+     * ```
+     * // dispatch an action
+     * store.dispatch(CounterAction.IncreaseCounter)
+     * // dispatch an effect
+     * store.dispatch(AnimationEffect
+     * ```
+     *
      *
      * @param dispatchable an action or effect to dispatch to the store
      */
     fun dispatch(dispatchable: Dispatchable)
-
 
     /**
      * The dispatch function to dispatch [Action]s or [Effect]s.
@@ -153,8 +163,8 @@ interface SubscribeStore<State> {
      * sub-states or skipping updates conditionally.
      */
     fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
-            subscriber: S,
-            selector: Subscription<State>.() -> Subscription<SelectedState>
+        subscriber: S,
+        selector: Subscription<State>.() -> Subscription<SelectedState>
     )
 
     /**
@@ -183,7 +193,7 @@ interface SubscribeStore<State> {
      * @param selector: selector closure that selects a subset of effects from all effects
      * dispatched to this store
      */
-    fun <E: Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?)
+    fun <E : Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?)
 
     /**
      * Unsubscribe a listener.
@@ -192,7 +202,7 @@ interface SubscribeStore<State> {
      *
      * @param listener: [Listener] that will be unsubscribed
      */
-    fun <E: Effect> unsubscribe(listener: Listener<E>)
+    fun <E : Effect> unsubscribe(listener: Listener<E>)
 }
 
 /**
@@ -221,13 +231,13 @@ interface SubscribeStore<State> {
  * depending on the root. If the root injects a [RootStore] into the feature modules, each feature
  * can use [RootStore.childStore] or [RootStore.plus] to create its own child store.
  *
- * <code>
- *     val rootStore: RootStore<RootState> = ... // dependency injection however you like
- *     val featureStore: Store<Pair<RootState, FeatureState>> =
- *              rootStore.childStore(::childReducer, initialChildState)
- *     // or shorthand (without initial state) you can use the `+` operator
- *     val featureStore: Store<Pair<RootState, FeatureState>> = rootStore + ::childReducer
- * </code>
+ * ```
+ * val rootStore: RootStore<RootState> = ... // dependency injection however you like
+ * val featureStore: Store<Pair<RootState, FeatureState>> =
+ *          rootStore.childStore(::childReducer, initialChildState)
+ * // or shorthand (without initial state) you can use the `+` operator
+ * val featureStore: Store<Pair<RootState, FeatureState>> = rootStore + ::childReducer
+ * ```
  *
  * Any [Action] or [Effect] dispatched to a child will pass through the parent and all its children.
  * Any [Action] or [Effect] dispatched to the parent will pass trhough the parent and all its children.
@@ -241,12 +251,37 @@ interface SubscribeStore<State> {
  * declare all [Middleware]s in the root store, all [Action]s passed to any of the stores (parent or
  * child) will pass through the root store's [Middleware]s before reaching any reducers.
  */
-interface RootStore<State>: Store<State> {
+interface RootStore<State> : Store<State> {
+    /**
+     * A shorthand for [childStore] without an intital state.
+     *
+     * ```
+     * val rootStore: RootStore<RootState> = ... // dependency injection however you like
+     * val featureStore: Store<Pair<RootState, FeatureState>> = rootStore + ::childReducer
+     * ```
+     *
+     * @param childReducer: reducer for the child state.
+     */
     operator fun <ChildState> plus(childReducer: Reducer<ChildState>) = childStore(childReducer)
 
+    /**
+     * Create a child store with an additional reducer and an initial state.
+     *
+     * The [RootStore] defines the parent state, which you cannot change at child store creation time.
+     *
+     * ```
+     * val rootStore: RootStore<RootState> = ... // dependency injection however you like
+     * val featureStore: Store<Pair<RootState, FeatureState>> =
+     *          rootStore.childStore(::childReducer, initialChildState)
+     * ```
+     *
+     * @param childReducer: reducer for the child state.
+     * @param initialChildState: optional initial child state. if omitted the child reducer will
+     * receive a [ReKotlinInit] action.
+     */
     fun <ChildState> childStore(
-            childReducer: Reducer<ChildState>,
-            initalChildState: ChildState? = null
+        childReducer: Reducer<ChildState>,
+        initialChildState: ChildState? = null
     ): Store<Pair<State, ChildState>>
 }
 
@@ -282,29 +317,28 @@ interface Store<State> : DispatchStore, SubscribeStore<State> {
 }
 
 /**
- * Create subscribers on the fly, without much boilerplate.
+ * Create a new state subscriber.
  *
- * <code>
- *     val subscriber = subscriber { state -> /* do something with the state */ }
- *     store.subscribe(subscriber)
- *     // .. sometime later
- *     store.unsubscribe(subscriber)
- * </code>
+ * ```
+ * val subscriber = subscriber { state -> /* do something with the state */ }
+ * store.subscribe(subscriber)
+ * // .. sometime later
+ * store.unsubscribe(subscriber)
+ * ```
  */
-//TODO read up on crossinline
 inline fun <S> subscriber(crossinline block: (S) -> Unit) = object : Subscriber<S> {
     override fun newState(state: S) = block(state)
 }
 
 /**
- * Create listeners on the fly, without much boilerplate.
+ * Create new effect listeners.
  *
- * <code>
- *     val listener = listener { effect -> /* do something with the effect */ }
- *     store.subscribe(listener)
- *     // .. sometime later
- *     store.unsubscribe(listener)
- * </code>
+ * ```
+ * val listener = listener { effect -> /* do something with the effect */ }
+ * store.subscribe(listener)
+ * // .. sometime later
+ * store.unsubscribe(listener)
+ * ```
  */
 inline fun <E : Effect> listener(crossinline block: (E) -> Unit) = object : Listener<E> {
     override fun onEffect(effect: E) = block(effect)
@@ -316,10 +350,10 @@ inline fun <E : Effect> listener(crossinline block: (E) -> Unit) = object : List
  * See [Store] for more details.
  */
 fun <State> store(
-        reducer: Reducer<State>,
-        state: State? = null,
-        vararg middleware: Middleware<State> = arrayOf()
-) : Store<State> =
+    reducer: Reducer<State>,
+    state: State? = null,
+    vararg middleware: Middleware<State> = arrayOf()
+): Store<State> =
         ParentStore(reducer, state, middleware.toList(), true)
 
 /**
@@ -328,8 +362,8 @@ fun <State> store(
  * See [RootStore] for the what, when and why of it all.
  */
 fun <State> rootStore(
-        reducer: Reducer<State>,
-        state: State? = null,
-        vararg middleware: Middleware<State> = arrayOf()
-) : RootStore<State> =
+    reducer: Reducer<State>,
+    state: State? = null,
+    vararg middleware: Middleware<State> = arrayOf()
+): RootStore<State> =
         ParentStore(reducer, state, middleware.toList(), true)

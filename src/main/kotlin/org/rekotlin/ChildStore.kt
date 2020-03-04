@@ -24,10 +24,10 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 
 internal class ChildStore<State>(
-        parentDispatchFunction: DispatchFunction,
-        private val reducer: Reducer<State>,
-        state: State?
-) : Store<State>  {
+    parentDispatchFunction: DispatchFunction,
+    private val reducer: Reducer<State>,
+    state: State?
+) : Store<State> {
 
     private var _state: State? = state
         set(value) {
@@ -50,6 +50,7 @@ internal class ChildStore<State>(
 
     // make sure dispatches go through the parent
     override val dispatchFunction: DispatchFunction = parentDispatchFunction
+
     override fun dispatch(dispatchable: Dispatchable) = dispatchFunction(dispatchable)
 
     // the parent will call back into the [delegateDispatchFunction]
@@ -75,12 +76,12 @@ internal class ChildStore<State>(
             subscribe(subscriber, ::stateIdentity)
 
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
-            subscriber: S,
-            selector: Subscription<State>.() -> Subscription<SelectedState>
+        subscriber: S,
+        selector: Subscription<State>.() -> Subscription<SelectedState>
     ) {
         unsubscribe(subscriber)
 
-        val actualSelector = compose(selector, Subscription<SelectedState>::skipRepeatsTransform)
+        val actualSelector = compose(selector, Subscription<SelectedState>::skipRepeats)
 
         val box = SubscriptionBox(actualSelector, subscriber)
 

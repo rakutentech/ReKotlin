@@ -42,4 +42,3 @@ internal class StoreTests {
         assert(reducer.actions.isEmpty())
     }
 }
-

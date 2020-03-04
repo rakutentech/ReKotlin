@@ -50,8 +50,8 @@ class SubscriberTests {
     }
 
     data class ComplexAppState(
-            val number: Int? = null,
-            val other: OtherState? = null
+        val number: Int? = null,
+        val other: OtherState? = null
     )
 
     data class OtherState(val name: String?, val age: Int?)
@@ -85,12 +85,10 @@ class SubscriberTests {
         store.dispatch(IntAction(5))
         store.dispatch(SetOtherStateAction(OtherState("TestName", 99)))
 
-
         assertNotNull(subscriber.lastState)
         assertEquals(5, subscriber.lastState?.first)
         assertEquals("TestName", subscriber.lastState?.second)
     }
-
 
     @Test
     fun `should not notify subscriber for unchanged substate when using skipRepeats "manually"`() {
@@ -98,7 +96,7 @@ class SubscriberTests {
         val subscriber = FakeSubscriber<Int?>()
 
         store.subscribe(subscriber) {
-            select { number }.skipRepeats { old, new -> old == new }
+            select { number }.skip { old, new -> old == new }
         }
 
         store.dispatch(IntAction(3))
@@ -108,20 +106,7 @@ class SubscriberTests {
     }
 
     @Test
-    fun `should not notify subscriber for unchanged substate when using the built in skipRepeats`() {
-        val store = ParentStore(::intReducer, IntState(3))
-        val subscriber = FakeSubscriber<Int?>()
-
-        store.subscribe(subscriber) { select { number }.skipRepeats() }
-
-        store.dispatch(IntAction(3))
-        store.dispatch(IntAction(3))
-
-        assertEquals(1, subscriber.callCount)
-    }
-
-    @Test
-    fun `should not notify subscriber for unchanged substate when using the default skiptRepeats`() {
+    fun `should not notify subscriber for unchanged sub-state by default`() {
         val store = ParentStore(::intReducer, IntState(3), skipRepeats = true)
         val subscriber = FakeSubscriber<Int?>()
 
@@ -182,7 +167,7 @@ class SubscriberTests {
 
         store.subscribe(subscriber) {
             select { subState }
-                .skip { oldState, newState -> oldState.value == newState.value }
+                    .skip { oldState, newState -> oldState.value == newState.value }
         }
 
         assertEquals(5, subscriber.lastState?.value)
@@ -201,7 +186,7 @@ class SubscriberTests {
 
         store.subscribe(subscriber) {
             select { subState }
-                .only { oldState, newState -> oldState.value != newState.value }
+                    .only { oldState, newState -> oldState.value != newState.value }
         }
 
         assertEquals(5, subscriber.lastState?.value)

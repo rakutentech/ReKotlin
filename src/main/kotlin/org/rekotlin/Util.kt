@@ -28,7 +28,7 @@ package org.rekotlin
 // TODO: do we need this?
 object ReKotlinInit : Action
 
-internal fun <T> Subscription<T>.skipRepeatsTransform(): Subscription<T> = this.skipRepeats()
+internal fun <T> Subscription<T>.skipRepeats(): Subscription<T> = this.skip { old, new -> old == new }
 internal fun <T> stateIdentity(sub: Subscription<T>) = sub
-internal fun <T: Effect> effectIdentity(effect: T) = effect
+internal fun <T : Effect> effectIdentity(effect: T) = effect
 internal fun <T, S> compose(first: T.() -> S, second: S.() -> S): T.() -> S = { first().second() }

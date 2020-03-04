@@ -21,10 +21,10 @@ package org.rekotlin
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-internal class ListenerBox<E: Effect>(
-        val listener: Listener<E>,
-        private val selector: (Effect) -> E?
-): Listener<Effect> {
+internal class ListenerBox<E : Effect>(
+    val listener: Listener<E>,
+    private val selector: (Effect) -> E?
+) : Listener<Effect> {
     override fun onEffect(effect: Effect) {
         selector(effect)?.let { listener.onEffect(it) }
     }
@@ -38,8 +38,8 @@ internal class ListenerBox<E: Effect>(
  * subscriber; however that type cannot be exposed to the store.
  */
 internal class SubscriptionBox<State, SelectedState>(
-        transform: Subscription<State>.() -> Subscription<SelectedState>,
-        internal val subscriber: Subscriber<SelectedState>
+    transform: Subscription<State>.() -> Subscription<SelectedState>,
+    internal val subscriber: Subscriber<SelectedState>
 ) {
     private val subscription = Subscription<State>()
 
