@@ -1,2 +1,3 @@
-rootProject.name = 'rekotlin'
+rootProject.name = 'rekotlin-parent'
 
+include ':rekotlin', ':rekotlin-router', ':sample'

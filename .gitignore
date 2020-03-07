@@ -3,7 +3,8 @@ ml
 /local.properties
 /.idea
 .DS_Store
-/build
+build
 /captures
 /artifacts
 /out
+*.iml

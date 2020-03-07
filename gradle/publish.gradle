@@ -1,0 +1,55 @@
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+// maven artifact
+
+apply plugin: 'maven-publish'
+
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        library(MavenPublication) {
+            groupId project.group
+            artifactId project.name // explicitly name project so the property won't be shadowed
+            version project.version
+            from components.java
+            artifact(javadocJar)
+            artifact(sourcesJar)
+        }
+    }
+}
+
+// publishing to jcenter
+
+apply plugin: 'com.jfrog.bintray'
+
+bintray {
+    user = System.getProperty('bintrayUser')
+    key = System.getProperty('bintrayKey')
+    publications = ['library']
+    pkg {
+        repo = 'maven'
+        name = name
+        userOrg = 'rakutentech'
+        websiteUrl = websiteUrl
+        vcsUrl = vcsUrl
+        licenses = ["MIT"]
+        publish = true
+        version {
+            name = version
+            released = new Date()
+        }
+    }
+}
