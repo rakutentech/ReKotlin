@@ -5,10 +5,12 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.root
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import org.rekotlin.router.*
+import org.rekotlin.router.Route
+import org.rekotlin.router.SetRouteAction
+import org.rekotlin.router.router
 
 /**
  * The main activity is responsible for wiring together the android framework and our application
@@ -34,9 +36,9 @@ class MainActivity : AppCompatActivity() {
         store.subscribe(router) { select { navigation } }
         store.dispatch(SetRouteAction(Route("home")))
 
-        onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true) {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if(store.state.navigation.route.segments.last().id == "home") {
+                if (store.state.navigation.route.segments.last().id == "home") {
                     finish()
                 }
                 store.dispatch(SetRouteAction(Route("home")))

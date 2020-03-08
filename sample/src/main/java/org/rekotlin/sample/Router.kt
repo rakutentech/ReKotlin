@@ -18,17 +18,17 @@ private typealias Pop = () -> Unit
  */
 
 class MainRouter(
-        private val store: Store<AppState>,
-        private val scope: CoroutineScope,
-        private val dispatcher: CoroutineDispatcher,
-        private val root: ViewGroup
+    private val store: Store<AppState>,
+    private val scope: CoroutineScope,
+    private val dispatcher: CoroutineDispatcher,
+    private val root: ViewGroup
 ) : Routable {
     private val homeScreen by lazy { HomeScreen(root) }
     private val historyScreen by lazy { HistoryScreen(root) }
     private val popStack = mutableMapOf<String, Pop>()
 
     override fun pushRouteSegment(routeSegment: RouteSegment, animated: Boolean): Routable {
-        val pop = when(routeSegment.id) {
+        val pop = when (routeSegment.id) {
             "home" -> showHome()
             "history" -> showHistory()
             else -> null
@@ -50,7 +50,7 @@ class MainRouter(
         return this
     }
 
-    private fun showHistory() : Pop {
+    private fun showHistory(): Pop {
         root.attach(historyScreen.view)
 
         val presenter = subscriber<List<User>> {
@@ -65,7 +65,7 @@ class MainRouter(
         }
     }
 
-    private fun showHome() : Pop {
+    private fun showHome(): Pop {
         root.attach(homeScreen.view)
 
         val presenter = HomeScreenPresenter(homeScreen)

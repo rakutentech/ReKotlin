@@ -8,9 +8,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.rekotlin.*
+import org.rekotlin.Action
+import org.rekotlin.DispatchFunction
+import org.rekotlin.Thunk
 import org.rekotlin.router.NavigationState
 import org.rekotlin.router.navigationReducer
+import org.rekotlin.store
+import org.rekotlin.thunkMiddleware
 
 /**
  * Here we define the Redux application model:
@@ -25,16 +29,16 @@ import org.rekotlin.router.navigationReducer
 val appStore = store(::appReducer, null, thunkMiddleware())
 
 data class AppState(
-        val user: UserState = UserState(),
-        val navigation: NavigationState = NavigationState(),
-        val history: List<User> = emptyList()
+    val user: UserState = UserState(),
+    val navigation: NavigationState = NavigationState(),
+    val history: List<User> = emptyList()
 )
 
 data class User(val name: String, val imageUrl: Uri?)
 
 data class UserState(
-        val user: User = User("nemo", null),
-        val loading: Boolean = false
+    val user: User = User("nemo", null),
+    val loading: Boolean = false
 )
 
 data class SetUserAction(val user: User) : Action
@@ -42,13 +46,13 @@ data class SetLoadingAction(val loading: Boolean) : Action
 
 fun historyReducer(action: Action, oldState: List<User>?): List<User> {
     val list = oldState ?: emptyList()
-    return if(action is SetUserAction) list + action.user else list
+    return if (action is SetUserAction) list + action.user else list
 }
 
 fun userReducer(action: Action, oldState: UserState?): UserState {
     val state = oldState ?: UserState()
 
-    return when(action) {
+    return when (action) {
         is SetUserAction -> state.copy(user = action.user)
         is SetLoadingAction -> state.copy(loading = action.loading)
         else -> state
@@ -66,9 +70,9 @@ fun appReducer(action: Action, oldState: AppState?): AppState {
 }
 
 class FetchRandomUser(
-        private val scope: CoroutineScope,
-        private val dispatcher: CoroutineDispatcher
-): Thunk<AppState> {
+    private val scope: CoroutineScope,
+    private val dispatcher: CoroutineDispatcher
+) : Thunk<AppState> {
     override fun invoke(dispatch: DispatchFunction, getState: () -> AppState?) {
         dispatch(SetLoadingAction(true))
         scope.launch {

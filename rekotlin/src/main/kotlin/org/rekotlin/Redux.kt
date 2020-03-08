@@ -380,8 +380,7 @@ fun <State> rootStore(
  * @see https://github.com/ReSwift/ReSwift-Thunk
  */
 @Suppress("UNCHECKED_CAST")
-fun <State> thunkMiddleware(): Middleware<State> =
-        { dispatch, getState ->
+fun <State> thunkMiddleware(): Middleware<State> = { dispatch, getState ->
             { next ->
                 { action ->
                     when (val thunk = action as? Thunk<State>) {

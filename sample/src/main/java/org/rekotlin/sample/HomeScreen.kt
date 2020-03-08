@@ -4,7 +4,11 @@ import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import kotlinx.android.synthetic.main.home_screen.view.*
+import kotlinx.android.synthetic.main.home_screen.view.goToHistory
+import kotlinx.android.synthetic.main.home_screen.view.image
+import kotlinx.android.synthetic.main.home_screen.view.name
+import kotlinx.android.synthetic.main.home_screen.view.progressBar
+import kotlinx.android.synthetic.main.home_screen.view.random
 import org.rekotlin.Subscriber
 
 /**
@@ -24,8 +28,8 @@ class HomeScreenPresenter(private val view: HomeScreen) : Subscriber<AppState> {
  * A view class that hides the android specific UI code from our application logic.
  */
 class HomeScreen(parent: ViewGroup) {
-    val view : ViewGroup = parent.inflate(R.layout.home_screen)
-    private val name : TextView = view.name
+    val view: ViewGroup = parent.inflate(R.layout.home_screen)
+    private val name: TextView = view.name
     private val image = view.image
     private val random = view.random
     private val goToHistory = view.goToHistory

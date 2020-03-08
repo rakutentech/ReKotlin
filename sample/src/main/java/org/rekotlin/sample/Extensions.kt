@@ -25,7 +25,7 @@ fun ImageView.loadImageFromUrl(url: Uri) =
         Glide.with(this.context).load(url).into(this)
 
 @Suppress("UNCHECKED_CAST")
-fun <V: View> ViewGroup.inflate(@LayoutRes viewId: Int, attachToParent: Boolean = false): V {
+fun <V : View> ViewGroup.inflate(@LayoutRes viewId: Int, attachToParent: Boolean = false): V {
     val inflater = LayoutInflater.from(this.context)
     return inflater.inflate(viewId, this, attachToParent) as V
 }
