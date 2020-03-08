@@ -1,0 +1,17 @@
+version: 2
+gradle_cache_key: &gradle_cache_key gradle-{{ checksum "build.gradle" }}-{{ checksum  "rekotlin/build.gradle" }}-{{ checksum  "rekotlin-router/build.gradle" }}
+
+jobs:
+  build:
+    docker:
+      - image: circleci/android:api-29
+    steps:
+      - checkout
+      - restore_cache:
+          key: *gradle_cache_key
+      - run: ./gradlew check -x sample:check
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: *gradle_cache_key
+      - run: bash <(curl -s https://codecov.io/bash)

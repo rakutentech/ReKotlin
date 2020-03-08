@@ -19,8 +19,8 @@ typealias UiThreadHandler = (() -> Unit) -> Unit
  * @param uiThreadHandler: optional function that is invoked to execute on the UI thread
  */
 fun router(
-        rootRoutable: Routable,
-        uiThreadHandler: UiThreadHandler = { it() }
+    rootRoutable: Routable,
+    uiThreadHandler: UiThreadHandler = { it() }
 ): Subscriber<NavigationState> =
         Router(rootRoutable, uiThreadHandler)
 
@@ -121,7 +121,6 @@ internal fun routingActionsForTransitionFrom(oldRoute: Route, newRoute: Route): 
 
     // Find the last common subroute between two routes
     val commonSubroute = largestCommonSubroute(oldRoute, newRoute)
-
 
     // Keeps track which element of the routes we are working on
     // We start at the end of the old route
