@@ -367,3 +367,37 @@ fun <State> rootStore(
     vararg middleware: Middleware<State> = arrayOf()
 ): RootStore<State> =
         ParentStore(reducer, state, middleware.toList(), true)
+
+/**
+ * Middleware that supports the use of Thunks.
+ *
+ * Are the basic building blocks that support asynchronous behavior. A thunk can execute arbitrary
+ * code when dispatched to the store. This allows you to execute network calls, do disk IO or long
+ * running computations in the background. The Redux contract of state-change-only-through-actions
+ * still holds, from within a thunk you can dispatch actions to initiate state changes.
+ *
+ * @see https://github.com/reduxjs/redux-thunk
+ * @see https://github.com/ReSwift/ReSwift-Thunk
+ */
+@Suppress("UNCHECKED_CAST")
+fun <State> thunkMiddleware(): Middleware<State> =
+        { dispatch, getState ->
+            { next ->
+                { action ->
+                    when (val thunk = action as? Thunk<State>) {
+                        is Thunk<State> -> thunk.invoke(dispatch, getState)
+                        else -> next(action)
+                    }
+                }
+            }
+        }
+
+// TODO: KDoc
+interface Thunk<State> : Action {
+    fun invoke(dispatch: DispatchFunction, getState: () -> State?)
+}
+
+// TODO: KDoc
+fun <State> thunk(body: (dispatch: DispatchFunction, getState: () -> State?) -> Unit) = object : Thunk<State> {
+    override fun invoke(dispatch: DispatchFunction, getState: () -> State?) = body(dispatch, getState)
+}
