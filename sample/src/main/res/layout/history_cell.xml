@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:textSize="18sp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:gravity="center_vertical"
+    tools:text="DUMMY"
+    android:padding="16dp"
+    android:layout_height="wrap_content">
+
+</TextView>
