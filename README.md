@@ -1,8 +1,8 @@
-## ReKotlin
+# ReKotlin
 
-[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReSwift/ReSwift/blob/master/LICENSE.md)
-[![Build Status](https://travis-ci.org/ReKotlin/ReKotlin.svg?branch=master)](https://travis-ci.org/ReKotlin/ReKotlin)
-[![Download](https://api.bintray.com/packages/rekotlin/rekotlin/rekotlin/images/download.svg) ](https://bintray.com/rekotlin/rekotlin/rekotlin/_latestVersion)
+[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/rakutentech/ReKotlin/blob/master/LICENSE)
+[![CircleCI](https://circleci.com/gh/rakutentech/ReKotlin.svg?style=svg)](https://circleci.com/gh/rakutentech/ReKotlin)
+[![codecov](https://codecov.io/gh/rakutentech/ReKotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/rakutentech/ReKotlin)
 
 Unidirectional data flow for Kotlin applications.
 

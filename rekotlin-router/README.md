@@ -1,4 +1,9 @@
-# ReKotlin-Router [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReKotlin/rekotlin-router/blob/master/LICENSE.md)
+# ReKotlin-Router
+
+[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReSwift/ReSwift/blob/master/LICENSE.md)
+[![Download](https://api.bintray.com/packages/rakutentech/maven-release/rekotlin-router/images/download.svg)](https://bintray.com/rakutentech/maven-release/rekotlin-router/_latestVersion)
+[![CircleCI](https://circleci.com/gh/rakutentech/ReKotlin.svg?style=svg)](https://circleci.com/gh/rakutentech/ReKotlin)
+[![codecov](https://codecov.io/gh/rakutentech/ReKotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/rakutentech/ReKotlin)
 
 A declarative router for [ReKotlin](https://github.com/rakutentech/ReKotlin). Declare routes like URL paths on the web.
 

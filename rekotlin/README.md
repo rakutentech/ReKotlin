@@ -1,9 +1,11 @@
 # ReKotlin
 
 [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReSwift/ReSwift/blob/master/LICENSE.md)
-[![Download](https://api.bintray.com/packages/rekotlin/rekotlin/rekotlin/images/download.svg) ](https://bintray.com/rekotlin/rekotlin/rekotlin/_latestVersion)
+[![Download](https://api.bintray.com/packages/rakutentech/maven-release/rekotlin/images/download.svg) ](https://bintray.com/rakutentech/maven-release/rekotlin/_latestVersion)
+[![CircleCI](https://circleci.com/gh/rakutentech/ReKotlin.svg?style=svg)](https://circleci.com/gh/rakutentech/ReKotlin)
+[![codecov](https://codecov.io/gh/rakutentech/ReKotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/rakutentech/ReKotlin)
 
-### Quick Start
+## Quick Start
 
 First add the rekotlin dependency to your build script.
 
