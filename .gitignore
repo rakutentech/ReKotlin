@@ -8,3 +8,4 @@ build
 /artifacts
 /out
 *.iml
+.env
