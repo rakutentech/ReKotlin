@@ -11,7 +11,7 @@ First add the rekotlin dependency to your build script.
 
 ```gradle
 dependencies {
-  implementation 'com.rakuten.tech.rekotlin:rekotlin:2.0.0-rc1'
+  implementation 'com.rakuten.tech.mobile.rekotlin:rekotlin:2.0.0-rc1'
 }
 ```
 
