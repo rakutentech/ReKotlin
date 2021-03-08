@@ -34,11 +34,11 @@ fun reducer(action: Action, state: AppState?) = state ?: AppState
 object TestEffect : Effect
 object TestEffect2 : Effect
 
-class TestListener<E : Effect>(private val block: (E) -> Unit) : Listener<E> {
+private class TestListener<E : Effect>(private val block: (E) -> Unit) : Listener<E> {
     override fun onEffect(effect: E) = block(effect)
 }
 
-class SimpleSubscriber<S>(private val block: (S) -> Unit) : Subscriber<S> {
+private class SimpleSubscriber<S>(private val block: (S) -> Unit) : Subscriber<S> {
     override fun newState(state: S) = block(state)
 }
 
