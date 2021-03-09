@@ -208,7 +208,7 @@ class CompositeStoreTests {
     )
 
     @Test
-    fun `subscribe with select and unsubscribe`() {
+    fun `should be able to subscribe with select and unsubscribe on composite store`() {
         val subscriber = TestSubscriber<SelectState>()
         compositeStore.subscribe(subscriber) {
             select {
@@ -233,7 +233,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `subscribe with select doesn't send duplicates`() {
+    fun `should not trigger subscriber multiple times when subscribed with select`() {
         val subscriber = TestSubscriber<SelectState>()
         compositeStore.subscribe(subscriber) {
             select {
@@ -256,7 +256,7 @@ class CompositeStoreTests {
 
     // <editor-fold desc="Effects & Actions dispatched to store > composite store">
     @Test
-    fun `effect dispatched to store triggers composite store listener`() {
+    fun `should trigger composite store listener when effect dispatched to store`() {
         val listener = CountingListener<TestEffect>().also { compositeStore.listen(it) }
 
         store1.dispatch(TestEffect)
@@ -265,7 +265,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `action dispatched to store triggers composite store subscriber`() {
+    fun `should trigger composite store subscriber when action dispatched to store`() {
         val subscriber = TestSubscriber<CompositeState>().also { compositeStore.subscribe(it) }
 
         store1.dispatch(SetState1String(value = "test"))
@@ -285,7 +285,7 @@ class CompositeStoreTests {
 
     // <editor-fold desc="Effects & Actions dispatched to composite store > store">
     @Test
-    fun `effect dispatched to composite store triggers store listener`() {
+    fun `should trigger store listener when effect dispatched to composite store`() {
         val listener1 = CountingListener<TestEffect>().also { store1.listen(it) }
 
         compositeStore.dispatch(TestEffect)
@@ -294,7 +294,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `action dispatched to composite store triggers store subscriber`() {
+    fun `should trigger store subscriber when action dispatched to composite store`() {
         val subscriber1 = TestSubscriber<State1>().also { store1.subscribe(it) }
 
         compositeStore.dispatch(SetState1String(value = "test"))
@@ -303,7 +303,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `unrelated action dispatched to composite store does not trigger store subscriber`() {
+    fun `should not trigger store subscriber when unrelated action dispatched to composite store`() {
         val subscriber1 = TestSubscriber<State1>().also { store1.subscribe(it) }
 
         compositeStore.dispatch(SetState2Integer(value = 123))
@@ -314,7 +314,7 @@ class CompositeStoreTests {
 
     // <editor-fold desc="Effects & Actions dispatched to store > store">
     @Test
-    fun `effect dispatched to store does not trigger other store listener`() {
+    fun `should not trigger store2 listener when effect dispatched to store1`() {
         val listener = CountingListener<TestEffect>().also { store2.listen(it) }
 
         store1.dispatch(TestEffect)
@@ -323,7 +323,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `action dispatched to store does not trigger other store subscriber`() {
+    fun `should not trigger store2 subscriber when action dispatched to store1`() {
         val subscriber = TestSubscriber<State2>().also { store2.subscribe(it) }
 
         store1.dispatch(SetState1String(value = "test"))
@@ -332,7 +332,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `unrelated action dispatched to store does not trigger other store subscriber`() {
+    fun `should not trigger store2 subscriber when unrelated action dispatched to store1`() {
         val subscriber = TestSubscriber<State2>().also { store2.subscribe(it) }
 
         store1.dispatch(SetState2Integer(value = 123))
@@ -369,7 +369,7 @@ class CompositeStoreTests {
 
     // <editor-fold desc="composite store (12) > composite store (23)">
     @Test
-    fun `effect dispatched to composite store triggers other composite store listener`() {
+    fun `should trigger other composite store listener when effect dispatched to composite store`() {
         val listener12 = CountingListener<TestEffect>().also { compositeStore12.listen(it) }
 
         compositeStore23.dispatch(TestEffect)
@@ -378,7 +378,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `action dispatched to composite store triggers other composite store subscriber`() {
+    fun `should trigger other composite store subscriber when action dispatched to composite store`() {
         val subscriber12 = TestSubscriber<TestState12>().also { compositeStore12.subscribe(it) }
 
         compositeStore23.dispatch(SetState2Integer(value = 123))
@@ -387,7 +387,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `unrelated action dispatched to composite store does not trigger other composite store subscriber`() {
+    fun `should not trigger other composite store subscriber when unrelated action dispatched to composite store`() {
         val subscriber12 = TestSubscriber<TestState12>().also { compositeStore12.subscribe(it) }
 
         compositeStore23.dispatch(SetState3Boolean(value = true))
@@ -398,7 +398,7 @@ class CompositeStoreTests {
 
     // <editor-fold desc="middleware">
     @Test
-    fun `cross composite store calls middleware once for duplicate stores`() {
+    fun `should only call middleware once when composite store includes duplicate stores from composite stores`() {
         data class TestState23And12(
             val state2: State2,
             val state3: State3,
@@ -427,7 +427,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `cross composite store calls middleware once for duplicate stores2`() {
+    fun `should only call middleware once when many composite store includes multiple duplicate stores`() {
         data class State13(
             val state1: State1,
             val state3: State3
@@ -478,7 +478,7 @@ class CompositeStoreTests {
 
     // <editor-fold desc="thunk middleware">
     @Test
-    fun `thunk dispatched to composite store affects relevant stores`() {
+    fun `should affect relevant stores when thunk dispatched to composite store`() {
         val store3Subscriber = TestSubscriber<State3> {
             println("Got $it")
             if (it.boolean == null) {
@@ -517,7 +517,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `thunk dispatched to composite store then thunk dispatch affects relevant store`() {
+    fun `should update store3 state when composite thunk dispatched to composite store then thunk dispatch`() {
         val store3Subscriber = TestSubscriber<State3> {
             if (it.boolean == null) {
                 store3.dispatch(SetState3Boolean(value = true))
@@ -536,7 +536,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `thunk dispatched to composite store triggers other composite store listener`() {
+    fun `should trigger compositeStore12 subscriber from store2 when thunk23 dispatched to compositeStore23`() {
         val initialValue = compositeStore23.state.state2.integer
         val add = 10
 
@@ -553,7 +553,7 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `should throw exception when thunk dispatched from wrong store`() {
+    fun `should throw cast exception when thunk23 dispatched from store12`() {
         val store23Thunk = testThunk<TestState23> { _, getState ->
             println("getState=${getState()}")
         }
@@ -564,13 +564,13 @@ class CompositeStoreTests {
     }
 
     @Test
-    fun `should throw exception when thunk dispatched from wrong dispatcher`() {
+    fun `should throw cast exception when thunk23 dispatched from dispatch12`() {
         val store23Thunk = testThunk<TestState23> { _, getState ->
             println("getState23=${getState()}")
         }
-        val store12Thunk = testThunk<TestState12> { dispatch, getState ->
+        val store12Thunk = testThunk<TestState12> { dispatch12, getState ->
             println("getState12=${getState()}")
-            dispatch(store23Thunk)
+            dispatch12(store23Thunk)
         }
 
         assertThrows(ClassCastException::class.java) {
