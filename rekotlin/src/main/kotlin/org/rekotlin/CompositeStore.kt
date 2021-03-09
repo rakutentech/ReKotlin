@@ -46,13 +46,13 @@ private class CompositeStore<State>(
                     it.newValues(prevState, newState)
                 }
             }
-            store.listenTo { effect: Effect ->
+            store.subscribe(listener { effect ->
                 if (!effect.isDispatching) {
                     listeners.forEach {
                         it.onEffect(effect)
                     }
                 }
-            }
+            })
         }
     }
 
@@ -142,10 +142,6 @@ inline fun <State> Store<State>.subscribeTo(crossinline subscriber: (State) -> U
             subscriber(state)
         }
     }.also { subscribe(it) }
-
-inline fun <reified EffectType : Effect> SubscribeStore<*>.listenTo(crossinline onEffect: (EffectType) -> Unit) =
-    listener<EffectType> { onEffect(it) }
-        .also { listener -> subscribe(listener) { it as? EffectType } }
 
 private class EffectDispatcher {
     private val dispatching = mutableListOf<Effect>()
