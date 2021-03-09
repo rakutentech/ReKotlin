@@ -38,7 +38,7 @@ private class CompositeStore<State>(
 
     init {
         stores.forEach { store ->
-            store.subscribeTo { _ ->
+            store.subscribeProjected { _ ->
                 val prevState = _state
                 val newState = compose(stores)
                 _state = newState
@@ -134,14 +134,10 @@ private class CompositeStore<State>(
     }
 
     private val Effect.isDispatching get() = effectDispatcher.isDispatching(this)
-}
 
-inline fun <State> Store<State>.subscribeTo(crossinline subscriber: (State) -> Unit) =
-    object : Subscriber<State> {
-        override fun newState(state: State) {
-            subscriber(state)
-        }
-    }.also { subscribe(it) }
+    private inline fun <State> Store<State>.subscribeProjected(crossinline subscriber: (State) -> Unit) =
+        subscribe(subscriber { subscriber(it) })
+}
 
 private class EffectDispatcher {
     private val dispatching = mutableListOf<Effect>()
