@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST", "unused")
+@file:Suppress("UNCHECKED_CAST", "unused", "NOTHING_TO_INLINE")
 
 package org.rekotlin
 
@@ -121,12 +121,12 @@ inline fun <S1, S2, S3, S4, S5, S6, S7, S8, S9, State> composeStores(
     compose(it.s1(), it.s2(), it.s3(), it.s4(), it.s5(), it.s6(), it.s7(), it.s8(), it.s9())
 }
 
-fun <S> Array<out Store<*>>.s1() = this[0].state as S
-fun <S> Array<out Store<*>>.s2() = this[1].state as S
-fun <S> Array<out Store<*>>.s3() = this[2].state as S
-fun <S> Array<out Store<*>>.s4() = this[3].state as S
-fun <S> Array<out Store<*>>.s5() = this[4].state as S
-fun <S> Array<out Store<*>>.s6() = this[5].state as S
-fun <S> Array<out Store<*>>.s7() = this[6].state as S
-fun <S> Array<out Store<*>>.s8() = this[7].state as S
-fun <S> Array<out Store<*>>.s9() = this[8].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s1() = this[0].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s2() = this[1].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s3() = this[2].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s4() = this[3].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s5() = this[4].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s6() = this[5].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s7() = this[6].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s8() = this[7].state as S
+@PublishedApi internal inline fun <S> Array<out Store<*>>.s9() = this[8].state as S
