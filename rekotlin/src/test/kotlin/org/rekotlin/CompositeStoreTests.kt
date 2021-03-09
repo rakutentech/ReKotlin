@@ -4,10 +4,10 @@ import java.util.IdentityHashMap
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
-//<editor-fold desc="State 1">
+// <editor-fold desc="State 1">
 private data class State1(
-        val string: String = "",
-        val string2: String = ""
+    val string: String = "",
+    val string2: String = ""
 )
 
 private data class SetState1String(val value: String) : Action
@@ -22,11 +22,11 @@ private fun state1Reducer(action: Action, oldState: State1?): State1 {
     }
 }
 
-//</editor-fold>
+// </editor-fold>
 
-//<editor-fold desc="State 2">
+// <editor-fold desc="State 2">
 private data class State2(
-        val integer: Int = 0
+    val integer: Int = 0
 )
 
 private fun state2Reducer(action: Action, oldState: State2?): State2 {
@@ -38,11 +38,11 @@ private fun state2Reducer(action: Action, oldState: State2?): State2 {
 }
 
 private data class SetState2Integer(val value: Int) : Action
-//</editor-fold>
+// </editor-fold>
 
-//<editor-fold desc="State 3">
+// <editor-fold desc="State 3">
 private data class State3(
-        val boolean: Boolean? = false
+    val boolean: Boolean? = false
 )
 
 private fun state3Reducer(action: Action, oldState: State3?): State3 {
@@ -54,8 +54,7 @@ private fun state3Reducer(action: Action, oldState: State3?): State3 {
 }
 
 private data class SetState3Boolean(val value: Boolean?) : Action
-//</editor-fold>
-
+// </editor-fold>
 
 class CompositeStoreTests {
 
@@ -91,7 +90,7 @@ class CompositeStoreTests {
         assert(state3Middleware.duplicateCount == 0) { "state3Middleware.duplicateCount != 0 (${state3Middleware.duplicateCount})\n > ${state3Middleware.duplicates}" }
     }
 
-    //<editor-fold desc="composite store">
+    // <editor-fold desc="composite store">
     @Test
     fun `should receive current state on subscribe`() {
         val subscriber = TestSubscriber<CompositeState>()
@@ -125,9 +124,9 @@ class CompositeStoreTests {
     fun `should notify all stores on dispatch action to composite store`() {
         compositeStore.dispatch(SetState2Integer(value = 123))
 
-        assert(state1Middleware.callCount == 1) {"state1Middleware.callCount != 1 ${state1Middleware.callCount}"}
-        assert(state2Middleware.callCount == 1) {"state2Middleware.callCount != 1 ${state2Middleware.callCount}"}
-        assert(state3Middleware.callCount == 1) {"state3Middleware.callCount != 1 ${state3Middleware.callCount}"}
+        assert(state1Middleware.callCount == 1) { "state1Middleware.callCount != 1 ${state1Middleware.callCount}" }
+        assert(state2Middleware.callCount == 1) { "state2Middleware.callCount != 1 ${state2Middleware.callCount}" }
+        assert(state3Middleware.callCount == 1) { "state3Middleware.callCount != 1 ${state3Middleware.callCount}" }
     }
 
     @Test
@@ -182,7 +181,6 @@ class CompositeStoreTests {
         assert(subscriber2.callCount == 0) { "subscriber2.callCount != 1 ${subscriber2.callCount}" }
     }
 
-
     @Test
     fun `composite store should always notify its own subscribers when an a store's state changes`() {
         val testSubscriber = TestSubscriber<CompositeState>().also {
@@ -198,14 +196,14 @@ class CompositeStoreTests {
         compositeStore.dispatch(SetState3Boolean(true))
         assert(testSubscriber.callCount == 3) { "testSubscriber.callCount != 2 ${testSubscriber.callCount}" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="composite store select">
+    // <editor-fold desc="composite store select">
 
     data class SelectState(
-            val string: String,
-            val int: Int,
-            val bool: Boolean?
+        val string: String,
+        val int: Int,
+        val bool: Boolean?
     )
 
     @Test
@@ -253,9 +251,9 @@ class CompositeStoreTests {
         compositeStore.dispatch(SetState1String2(value = "other string"))
         assert(subscriber.callCount == 1) { "subscriber.callCount != 1 (${subscriber.callCount})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="Effects & Actions dispatched to store > composite store">
+    // <editor-fold desc="Effects & Actions dispatched to store > composite store">
     @Test
     fun `effect dispatched to store triggers composite store listener`() {
         val listener = CountingListener<TestEffect>().also { compositeStore.listen(it) }
@@ -282,9 +280,9 @@ class CompositeStoreTests {
 
         assert(subscriber.callCount == 0) { "subscriber.callCount != 0 (${subscriber.callCount})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="Effects & Actions dispatched to composite store > store">
+    // <editor-fold desc="Effects & Actions dispatched to composite store > store">
     @Test
     fun `effect dispatched to composite store triggers store listener`() {
         val listener1 = CountingListener<TestEffect>().also { store1.listen(it) }
@@ -311,9 +309,9 @@ class CompositeStoreTests {
 
         assert(subscriber1.callCount == 0) { "subscriber.callCount != 0 (${subscriber1.callCount})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="Effects & Actions dispatched to store > store">
+    // <editor-fold desc="Effects & Actions dispatched to store > store">
     @Test
     fun `effect dispatched to store does not trigger other store listener`() {
         val listener = CountingListener<TestEffect>().also { store2.listen(it) }
@@ -340,12 +338,12 @@ class CompositeStoreTests {
 
         assert(subscriber.callCount == 0) { "subscriber.callCount != 0 (${subscriber.callCount})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="more composite stores">
+    // <editor-fold desc="more composite stores">
     private data class TestState12(
-            val state1: State1,
-            val state2: State2
+        val state1: State1,
+        val state2: State2
     )
 
     private val compositeStore12 = composeStores(store1, store2, LoggingMiddleware("store 12"), thunkMiddleware()) { a, b ->
@@ -356,8 +354,8 @@ class CompositeStoreTests {
     }
 
     private data class TestState23(
-            val state2: State2,
-            val state3: State3
+        val state2: State2,
+        val state3: State3
     )
     private val compositeStore23 = composeStores(store2, store3, LoggingMiddleware("store 23"), thunkMiddleware()) { a, b ->
         TestState23(
@@ -365,9 +363,9 @@ class CompositeStoreTests {
                 state3 = b
         )
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="composite store (12) > composite store (23)">
+    // <editor-fold desc="composite store (12) > composite store (23)">
     @Test
     fun `effect dispatched to composite store triggers other composite store listener`() {
         val listener12 = CountingListener<TestEffect>().also { compositeStore12.listen(it) }
@@ -394,9 +392,9 @@ class CompositeStoreTests {
 
         assert(subscriber12.callCount == 0) { "subscriber.callCount != 0 (${subscriber12.callCount})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="middleware">
+    // <editor-fold desc="middleware">
     @Test
     fun `cross composite store calls middleware once for duplicate stores`() {
         data class TestState23And12(
@@ -474,9 +472,9 @@ class CompositeStoreTests {
 
         assert(subscriber.callCount == 1) { "subscriber.callCount != 1 (${subscriber.callCount})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 
-    //<editor-fold desc="thunk middleware">
+    // <editor-fold desc="thunk middleware">
     @Test
     fun `thunk dispatched to composite store affects relevant stores`() {
         val store3Subscriber = TestSubscriber<State3> {
@@ -551,7 +549,7 @@ class CompositeStoreTests {
         assert(subscriber.callCount == 1) { "subscriber.callCount != 1 (${subscriber.callCount})" }
         assert(store2.state.integer == initialValue + add) { "store2.state.integer != initialValue+add (${store2.state.integer})" }
     }
-    //</editor-fold>
+    // </editor-fold>
 }
 
 private class TestSubscriber<S>(private val block: (S) -> Unit = {}) : Subscriber<S> {
@@ -602,15 +600,13 @@ private class TestThunk<S : Any>(private val block: ((DispatchFunction, () -> S?
     }
 }
 
-private class LoggingMiddleware<S>(private val label: String): Middleware<S> {
-    override fun invoke(dispatch: DispatchFunction, getState: () -> S?): (DispatchFunction) -> DispatchFunction =
-            { next ->
-                {   action ->
+private class LoggingMiddleware<S>(private val label: String) : Middleware<S> {
+    override fun invoke(dispatch: DispatchFunction, getState: () -> S?): (DispatchFunction) -> DispatchFunction = { next ->
+                { action ->
                     println(">> $label ($action, ${getState()})")
                     next(action)
                 }
             }
-
 }
 
 private class CountingMiddleware<S> : Middleware<S> {
