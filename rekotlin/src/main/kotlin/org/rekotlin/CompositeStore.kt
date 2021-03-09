@@ -3,7 +3,19 @@ package org.rekotlin
 import java.util.IdentityHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-class CompositeStore<State>(
+fun <State> compositeStore(
+    vararg stores: Store<*>,
+    middleware: List<Middleware<State>> = emptyList(),
+    skipRepeats: Boolean = true,
+    compose: Compose<State>
+): Store<State> = CompositeStore(
+    *stores,
+    middleware = middleware,
+    skipRepeats = skipRepeats,
+    compose = compose
+)
+
+private class CompositeStore<State>(
     private vararg val stores: Store<*>,
     middleware: List<Middleware<State>> = emptyList(),
     private val skipRepeats: Boolean = true,
