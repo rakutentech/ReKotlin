@@ -2,6 +2,7 @@ package org.rekotlin
 
 import java.util.IdentityHashMap
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 // <editor-fold desc="State 1">
@@ -348,8 +349,8 @@ class CompositeStoreTests {
 
     private val compositeStore12 = composeStores(store1, store2, LoggingMiddleware("store 12"), thunkMiddleware()) { a, b ->
         TestState12(
-                state1 = a,
-                state2 = b
+            state1 = a,
+            state2 = b
         )
     }
 
@@ -357,10 +358,11 @@ class CompositeStoreTests {
         val state2: State2,
         val state3: State3
     )
+
     private val compositeStore23 = composeStores(store2, store3, LoggingMiddleware("store 23"), thunkMiddleware()) { a, b ->
         TestState23(
-                state2 = a,
-                state3 = b
+            state2 = a,
+            state3 = b
         )
     }
     // </editor-fold>
@@ -549,6 +551,32 @@ class CompositeStoreTests {
         assert(subscriber.callCount == 1) { "subscriber.callCount != 1 (${subscriber.callCount})" }
         assert(store2.state.integer == initialValue + add) { "store2.state.integer != initialValue+add (${store2.state.integer})" }
     }
+
+    @Test
+    fun `should throw exception when thunk dispatched from wrong store`() {
+        val store23Thunk = testThunk<TestState23> { _, getState ->
+            println("getState=${getState()}")
+        }
+
+        assertThrows(ClassCastException::class.java) {
+            compositeStore12.dispatch(store23Thunk)
+        }
+    }
+
+    @Test
+    fun `should throw exception when thunk dispatched from wrong dispatcher`() {
+        val store23Thunk = testThunk<TestState23> { _, getState ->
+            println("getState23=${getState()}")
+        }
+        val store12Thunk = testThunk<TestState12> { dispatch, getState ->
+            println("getState12=${getState()}")
+            dispatch(store23Thunk)
+        }
+
+        assertThrows(ClassCastException::class.java) {
+            compositeStore12.dispatch(store12Thunk)
+        }
+    }
     // </editor-fold>
 }
 
@@ -602,11 +630,11 @@ private class TestThunk<S : Any>(private val block: ((DispatchFunction, () -> S?
 
 private class LoggingMiddleware<S>(private val label: String) : Middleware<S> {
     override fun invoke(dispatch: DispatchFunction, getState: () -> S?): (DispatchFunction) -> DispatchFunction = { next ->
-                { action ->
-                    println(">> $label ($action, ${getState()})")
-                    next(action)
-                }
-            }
+        { action ->
+            println(">> $label ($action, ${getState()})")
+            next(action)
+        }
+    }
 }
 
 private class CountingMiddleware<S> : Middleware<S> {
@@ -617,10 +645,10 @@ private class CountingMiddleware<S> : Middleware<S> {
     val duplicateCount get() = duplicates.size
 
     override fun invoke(dispatch: DispatchFunction, getState: () -> S?): (DispatchFunction) -> DispatchFunction = { next ->
-            { action ->
-                callCount++
-                dispatchableHistory[action] = (dispatchableHistory[action] ?: 0) + 1
-                next(action)
-            }
+        { action ->
+            callCount++
+            dispatchableHistory[action] = (dispatchableHistory[action] ?: 0) + 1
+            next(action)
         }
+    }
 }
