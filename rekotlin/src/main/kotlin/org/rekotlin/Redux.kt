@@ -345,7 +345,7 @@ inline fun <E : Effect> listener(crossinline block: (E) -> Unit) = object : List
 }
 
 /**
- * Create a new store.
+ * Create a new [Store].
  *
  * See [Store] for more details.
  */
@@ -357,7 +357,7 @@ fun <State> store(
     ParentStore(reducer, state, middleware.toList(), true)
 
 /**
- * Create a new root store.
+ * Create a new [RootStore].
  *
  * See [RootStore] for the what, when and why of it all.
  */
@@ -394,7 +394,7 @@ fun <State> thunkMiddleware(): Middleware<State> = { dispatch, getState ->
 }
 
 /**
- * Thunks are the basic building blocks that support asynchronous behavior in Redux.
+ * [Thunk]s are the basic building blocks that support asynchronous behavior in Redux.
  *
  * A thunk can execute arbitrary code when dispatched to the store. This allows you to execute network calls, do disk IO
  * or long running computations in the background. The Redux contract of
