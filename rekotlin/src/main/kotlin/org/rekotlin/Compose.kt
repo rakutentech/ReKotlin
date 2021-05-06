@@ -2,6 +2,11 @@
 
 package org.rekotlin
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, State> composeStores(
     store1: Store<S1>,
     vararg middleware: Middleware<State>,
@@ -10,6 +15,11 @@ inline fun <S1, State> composeStores(
     compose(it.s1())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -19,6 +29,11 @@ inline fun <S1, S2, State> composeStores(
     compose(it.s1(), it.s2())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -29,6 +44,11 @@ inline fun <S1, S2, S3, State> composeStores(
     compose(it.s1(), it.s2(), it.s3())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, S4, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -40,6 +60,11 @@ inline fun <S1, S2, S3, S4, State> composeStores(
     compose(it.s1(), it.s2(), it.s3(), it.s4())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, S4, S5, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -52,6 +77,11 @@ inline fun <S1, S2, S3, S4, S5, State> composeStores(
     compose(it.s1(), it.s2(), it.s3(), it.s4(), it.s5())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, S4, S5, S6, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -65,6 +95,11 @@ inline fun <S1, S2, S3, S4, S5, S6, State> composeStores(
     compose(it.s1(), it.s2(), it.s3(), it.s4(), it.s5(), it.s6())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, S4, S5, S6, S7, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -79,6 +114,11 @@ inline fun <S1, S2, S3, S4, S5, S6, S7, State> composeStores(
     compose(it.s1(), it.s2(), it.s3(), it.s4(), it.s5(), it.s6(), it.s7())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, S4, S5, S6, S7, S8, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,
@@ -94,6 +134,11 @@ inline fun <S1, S2, S3, S4, S5, S6, S7, S8, State> composeStores(
     compose(it.s1(), it.s2(), it.s3(), it.s4(), it.s5(), it.s6(), it.s7(), it.s8())
 }
 
+/**
+ * Convenience factory function for [compositeStore]
+ *
+ * @see [compositeStore]
+ */
 inline fun <S1, S2, S3, S4, S5, S6, S7, S8, S9, State> composeStores(
     store1: Store<S1>,
     store2: Store<S2>,

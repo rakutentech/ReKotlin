@@ -160,6 +160,11 @@ internal class ParentStore<State>(
 
     override fun subscribe(listener: Listener<Effect>) = subscribe(listener, ::effectIdentity)
 
+    override fun <E : Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?) {
+        unsubscribe(listener)
+        listeners.add(ListenerBox(listener, selector))
+    }
+
     override fun <E : Effect> unsubscribe(listener: Listener<E>) {
         val index = this.listeners.indexOfFirst { it.listener === listener }
         if (index != -1) {
@@ -167,11 +172,6 @@ internal class ParentStore<State>(
         }
     }
 
-    override fun <E : Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?) {
-        unsubscribe(listener)
-
-        listeners.add(ListenerBox(listener, selector))
-    }
 }
 
 // private class Lock<T> : (() -> T) -> T {

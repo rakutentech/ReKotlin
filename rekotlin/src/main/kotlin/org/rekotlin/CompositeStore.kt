@@ -5,6 +5,100 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 internal typealias Compose<State> = (Array<out Store<*>>) -> State
 
+/**
+ * Factory function to create a composite store.
+ *
+ * A composite store aggregates the states of all the composed stores (also referred to as
+ * "original stores" to clearly differentiate composed vs composite).
+ * The composite store doesn't have a state & reducer of its own.
+ * It keeps a projection of all the states of the composed stores.
+ *
+ * ```
+ * +---------+                  +-----------------+
+ * | Store 1 | -- state 1 --->  | Composite Store |
+ * +---------+                  |                 |
+ *                              |   | state 1 |   |
+ * +---------+                  |   | state 2 |   |                        +------------+
+ * | Store 2 | -- state 2 --->  |   v state 3 v   | -- composite state --> | subscriber |
+ * +---------+                  |                 |                        +------------+
+ *                              | =v= compose =v= |
+ * +---------+                  |                 |
+ * | Store 3 | -- state 3 --->  | composite state |
+ * +---------+                  +-----------------+
+ *```
+ *
+ * ### Composite Store State
+ *
+ * Whenever state changes in one of the original stores the composite store updates its state
+ * projection and notifies all of its subscribers.
+ *
+ * ### Actions & Effects
+ *
+ * [Action]s and [Effect]s dispatched to the composite store propagate to the original stores
+ * (store 1, 2 and 3 in the diagram above).
+ *
+ * The composite store is not aware of [Action]s dispatched to one of the composed stores, however
+ * it will notice state changes that result from those actions.
+ *
+ * [Effect]s dispatched to composed stores will propagate to subscribers of the composite store.
+ *
+ * ### Middlewares
+ *
+ * The composite store holds its own middlewares. These middlewares only act on [Action]s dispatched
+ * to the composite store, never on [Action]s that are only dispatched to one of the original stores.
+ * For example when you dispatch an action to store 1 (in the diagram above) the middlewares in
+ * the composite store will not act on that action, only the middlewares of store 1.
+ *
+ * In other words:
+ * - composing stores creates a hierarchy of middlewares.
+ * - composing stores enables isolation of middlewares.
+ *
+ * ### Usage examples
+ *
+ * ```kotlin
+ * val featureStore: Store<FeatureState> =  // store specific to your feature.
+ *                                          // may have feature specific middleware.
+ * val authStore: Store<AuthStare>       =  // shared login state store.
+ *
+ * data class CompositeState(val auth: AuthState, feature: FeatureState)
+ * val compositeStore: Store<Pair<AuthState, FeatureState>> = composeStores(
+ *              authStore,
+ *              featureStore,
+ *              thunkMiddleware()
+ * ) { authState, featureState ->
+ *      CompositeSate(authState, featureState)
+ * }
+ * // in the auth feature
+ * authStore.dispatch(LogoutAction)
+ * compositeStore.dispatch(FeatureAnimationEffect)
+ * ```
+ *
+ * ### Modularized Applications
+ *
+ * Composite store allows you to break down the global state model into sub-states and compose them
+ * at runtime. This enables you to break applications into multiple modules, with Redux broken down
+ * at module boundaries. But the stores are still integrated in the sense that they can send
+ * [Dispatchable] to all subscribers of stores that are composed.
+ *
+ * For example a base module can contain shared behavior (like authentication state) and feature
+ * modules can compose on top of that. So the stores in the code snippet above could live in
+ * different modules.
+ *
+ * ```
+ * +- Base Module ---+                  +- Feature 1 Module ------+
+ * | owns authStore ------ inject ----> | create compositeStore 1 |
+ * +------- | -------+                  +-------------------------+
+ *          |
+ *          |                           +- Feature 2 Module ------+
+ *          +------------- inject ----> | create compositeStore 2 |
+ *                                      +-------------------------+
+ * ```
+ *
+ * Both feature modules can react to auth state or send actions & effects to the authStore (via
+ * their feature-local composite store).
+ *
+ * @see [composeStores]
+ */
 fun <State> compositeStore(
     vararg stores: Store<*>,
     middleware: List<Middleware<State>> = emptyList(),
@@ -96,7 +190,7 @@ private class CompositeStore<State>(
             else -> Dispatcher(dispatchable).dispatchTo(stores)
         }
 
-    override fun <S : Subscriber<State>> subscribe(subscriber: S) = subscribe(subscriber, { this })
+    override fun <S : Subscriber<State>> subscribe(subscriber: S) = subscribe(subscriber, ::stateIdentity)
 
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
         subscriber: S,
