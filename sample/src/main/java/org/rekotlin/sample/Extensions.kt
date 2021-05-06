@@ -22,7 +22,7 @@ fun ViewGroup.detach(view: View) {
 }
 
 fun ImageView.loadImageFromUrl(url: Uri) =
-        Glide.with(this.context).load(url).into(this)
+    Glide.with(this.context).load(url).into(this)
 
 @Suppress("UNCHECKED_CAST")
 fun <V : View> ViewGroup.inflate(@LayoutRes viewId: Int, attachToParent: Boolean = false): V {

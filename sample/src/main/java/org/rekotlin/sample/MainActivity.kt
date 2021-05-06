@@ -36,13 +36,16 @@ class MainActivity : AppCompatActivity() {
         store.subscribe(router) { select { navigation } }
         store.dispatch(SetRouteAction(Route("home")))
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (store.state.navigation.route.segments.last().id == "home") {
-                    finish()
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (store.state.navigation.route.segments.last().id == "home") {
+                        finish()
+                    }
+                    store.dispatch(SetRouteAction(Route("home")))
                 }
-                store.dispatch(SetRouteAction(Route("home")))
             }
-        })
+        )
     }
 }

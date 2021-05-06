@@ -63,9 +63,9 @@ fun appReducer(action: Action, oldState: AppState?): AppState {
     val state = oldState ?: AppState()
 
     return state.copy(
-            user = userReducer(action, state.user),
-            navigation = navigationReducer(action, state.navigation),
-            history = historyReducer(action, state.history)
+        user = userReducer(action, state.user),
+        navigation = navigationReducer(action, state.navigation),
+        history = historyReducer(action, state.history)
     )
 }
 
@@ -78,14 +78,16 @@ class FetchRandomUser(
         scope.launch {
             val randomUser = withContext(dispatcher) {
                 val response = Fuel.get("https://randomuser.me/api/").awaitString()
-                val person = (JSONObject(response)
-                        .getJSONArray("results")[0] as JSONObject)
+                val person = (
+                    JSONObject(response)
+                        .getJSONArray("results")[0] as JSONObject
+                    )
                 val url = person
-                        .getJSONObject("picture")
-                        .getString("large")
+                    .getJSONObject("picture")
+                    .getString("large")
                 val name = person
-                        .getJSONObject("name")
-                        .getString("first")
+                    .getJSONObject("name")
+                    .getString("first")
                 Pair(name, url.asUri())
             }
 

@@ -34,7 +34,7 @@ private class HistoryAdapter : RecyclerView.Adapter<HistoryViewHolder>() {
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder =
-            HistoryViewHolder(parent.inflate(R.layout.history_cell))
+        HistoryViewHolder(parent.inflate(R.layout.history_cell))
 
     override fun getItemCount(): Int = history.size
 
