@@ -19,7 +19,6 @@ apply from: "${rootDir}/gradle/jacoco.gradle"
 
 apply plugin: 'org.jetbrains.dokka'
 
-
 dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/dokka"

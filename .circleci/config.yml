@@ -2,16 +2,38 @@ version: 2
 gradle_cache_key: &gradle_cache_key gradle-{{ checksum "build.gradle" }}-{{ checksum  "rekotlin/build.gradle" }}-{{ checksum  "rekotlin-router/build.gradle" }}
 
 jobs:
+  ktlint:
+    docker:
+      - image: nemooudeis/ktlint:0.40.0
+    steps:
+      - checkout
+      - run:
+          name: ktlint to check for code style violations in changes between PR and origin/master
+          command: |
+            set +e # allow grep to fail without failing the whole step (in cases no kotlin files were changed)
+            files=$(git diff $(git show-ref origin/master -s) HEAD --name-only --relative | grep '\.kt[s"]\?$')
+            [ -z "$files" ] && echo "no kotin files changed, all good!" && exit 0
+            echo $files | xargs ktlint --relative .
+
   build:
     docker:
-      - image: circleci/android:api-29
+      - image: circleci/openjdk:11-jdk-buster
     steps:
       - checkout
       - restore_cache:
           key: *gradle_cache_key
-      - run: ./gradlew check -x sample:check
+      - run: ./gradlew check
       - save_cache:
           paths:
             - ~/.gradle
           key: *gradle_cache_key
       - run: bash <(curl -s https://codecov.io/bash)
+
+workflows:
+  version: 2
+  build_and_publish:
+    jobs:
+      - ktlint
+      - build:
+          requires:
+            - ktlint

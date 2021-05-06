@@ -79,9 +79,9 @@ internal class ParentStore<State>(
         childReducer: Reducer<ChildState>,
         initialChildState: ChildState?
     ): Store<Pair<State, ChildState>> {
-        val child = ChildStore(
+        val child: ChildStore<Pair<State, ChildState>> = ChildStore(
             dispatchFunction,
-            { a, s -> Pair(s?.first ?: state, childReducer(a, s?.second)) },
+            { a, s -> Pair(s?.first ?: state, childReducer(a, s?.second)!!) },
             if (initialChildState != null) Pair(state, initialChildState) else null
         )
 
