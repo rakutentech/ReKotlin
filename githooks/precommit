@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+files=$(git diff HEAD --cached --name-only --relative | grep '\.kt$')
+
+ktlint "$files" -F
+git add $files
