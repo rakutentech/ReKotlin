@@ -1,3 +1,5 @@
 rootProject.name = 'rekotlin-parent'
 
-include ':rekotlin', ':rekotlin-router', ':sample'
+include ':rekotlin', ':rekotlin-router'
+// exclude so we don't need android on CI
+// include ':sample'
