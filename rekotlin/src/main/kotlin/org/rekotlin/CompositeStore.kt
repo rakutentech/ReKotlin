@@ -130,7 +130,12 @@ private class CompositeStore<State>(
         }
     }
 
-    private var dispatchAction: DispatchAction = buildDispatchAction()
+    private var dispatchAction: DispatchAction = middlewares.reversed()
+            .fold(this::defaultDispatch as DispatchFunction,
+                    { dispatch, middleware ->
+                        middleware(this::dispatch, this::state)(dispatch)
+                    }
+            )
 
     init {
         stores.forEach { store ->
@@ -165,24 +170,6 @@ private class CompositeStore<State>(
                 is Action -> dispatchAction(dispatchable)
             }
         }
-
-    operator fun plusAssign(middleware: Middleware<State>) {
-        middlewares += middleware
-        dispatchAction = buildDispatchAction()
-    }
-
-    operator fun minusAssign(middleware: Middleware<State>) {
-        middlewares -= middleware
-        dispatchAction = buildDispatchAction()
-    }
-
-    private fun buildDispatchAction() =
-        middlewares.reversed()
-            .fold(this::defaultDispatch as DispatchFunction,
-                { dispatch, middleware ->
-                    middleware(this::dispatch, this::state)(dispatch)
-                }
-            )
 
     private fun defaultDispatch(dispatchable: Dispatchable) =
         when (dispatchable) {
