@@ -56,15 +56,15 @@ class Subscription<State> {
     @Suppress("FunctionName")
     private fun <SelectedState> _select(selector: ((State) -> SelectedState)): Subscription<SelectedState> =
 
-            Subscription { selectedStateSink ->
-                /**
-                 * this [observe] is in the parent Subscription<State>.
-                 * it will pass the selected sub state to the child Subscription<SelectedState>.
-                 */
-                this.observe { old, new ->
-                    selectedStateSink(old?.let(selector), selector(new))
-                }
+        Subscription { selectedStateSink ->
+            /**
+             * this [observe] is in the parent Subscription<State>.
+             * it will pass the selected sub state to the child Subscription<SelectedState>.
+             */
+            this.observe { old, new ->
+                selectedStateSink(old?.let(selector), selector(new))
             }
+        }
 
     private var observer: ((old: State?, new: State) -> Unit)? = null
 
@@ -97,7 +97,7 @@ class Subscription<State> {
      * @param selector A closure that maps a state to a selected substate
      */
     fun <SelectedState> select(selector: (State.() -> SelectedState)): Subscription<SelectedState> =
-            _select(selector)
+        _select(selector)
 
     /**
      * Skips state under custom conditions.
@@ -114,13 +114,13 @@ class Subscription<State> {
      * @param condition: Determines whether to skip a state update or not.
      */
     fun skip(condition: (old: State, new: State) -> Boolean): Subscription<State> =
-            Subscription { sink ->
-                observe { old, new ->
-                    if (old == null || !condition(old, new)) {
-                        sink(old, new)
-                    }
+        Subscription { sink ->
+            observe { old, new ->
+                if (old == null || !condition(old, new)) {
+                    sink(old, new)
                 }
             }
+        }
 
     /**
      * Updates state only under custom conditions.
@@ -137,5 +137,5 @@ class Subscription<State> {
      * @param condition: Determines whether to update subscribers for a state update.
      */
     fun only(condition: (old: State, new: State) -> Boolean): Subscription<State> =
-            skip { old, new -> !condition(old, new) }
+        skip { old, new -> !condition(old, new) }
 }

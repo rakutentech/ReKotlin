@@ -49,9 +49,11 @@ internal class ParentStore<State>(
 
     @Suppress("NAME_SHADOWING")
     private val dispatchAction: DispatchAction = middleware
-            .reversed()
-            .fold(this::defaultDispatch as DispatchFunction,
-                    { dispatch, middleware -> middleware(this::dispatch, this::state)(dispatch) })
+        .reversed()
+        .fold(
+            this::defaultDispatch as DispatchFunction,
+            { dispatch, middleware -> middleware(this::dispatch, this::state)(dispatch) }
+        )
 
     private val dispatchEffect: DispatchEffect = { effect ->
         children.forEach { it(effect) }
@@ -78,9 +80,9 @@ internal class ParentStore<State>(
         initialChildState: ChildState?
     ): Store<Pair<State, ChildState>> {
         val child = ChildStore(
-                dispatchFunction,
-                { a, s -> Pair(s?.first ?: state, childReducer(a, s?.second)) },
-                if (initialChildState != null) Pair(state, initialChildState) else null
+            dispatchFunction,
+            { a, s -> Pair(s?.first ?: state, childReducer(a, s?.second)) },
+            if (initialChildState != null) Pair(state, initialChildState) else null
         )
 
         children.add(child.delegateDispatchFunction)
@@ -97,7 +99,7 @@ internal class ParentStore<State>(
     }
 
     override fun <S : Subscriber<State>> subscribe(subscriber: S) =
-            subscribe(subscriber, ::stateIdentity)
+        subscribe(subscriber, ::stateIdentity)
 
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
         subscriber: S,
@@ -134,10 +136,10 @@ internal class ParentStore<State>(
     private fun <T> noInterruptions(work: () -> T): T {
         if (noInterruptionsPlease) {
             throw Exception(
-                    "ReKotlin:ConcurrentMutationError - " +
-                            "Action has been dispatched while a previous action is being processed. " +
-                            "A reducer is dispatching an action, " +
-                            "or you are using ReKotlin in a concurrent context (e.g. multithreaded)."
+                "ReKotlin:ConcurrentMutationError - " +
+                    "Action has been dispatched while a previous action is being processed. " +
+                    "A reducer is dispatching an action, " +
+                    "or you are using ReKotlin in a concurrent context (e.g. multithreaded)."
             )
         }
 
@@ -149,28 +151,27 @@ internal class ParentStore<State>(
     }
 
     private fun defaultDispatch(dispatchable: Dispatchable) =
-            when (dispatchable) {
-                is Action -> _state = noInterruptions {
-                    children.forEach { it(dispatchable) }
-                    reducer(dispatchable, _state)
-                }
-                is Effect -> listeners.forEach { it.onEffect(dispatchable) }
-                else -> Unit
+        when (dispatchable) {
+            is Action -> _state = noInterruptions {
+                children.forEach { it(dispatchable) }
+                reducer(dispatchable, _state)
             }
+            is Effect -> listeners.forEach { it.onEffect(dispatchable) }
+            else -> Unit
+        }
 
     override fun subscribe(listener: Listener<Effect>) = subscribe(listener, ::effectIdentity)
+
+    override fun <E : Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?) {
+        unsubscribe(listener)
+        listeners.add(ListenerBox(listener, selector))
+    }
 
     override fun <E : Effect> unsubscribe(listener: Listener<E>) {
         val index = this.listeners.indexOfFirst { it.listener === listener }
         if (index != -1) {
             this.listeners.removeAt(index)
         }
-    }
-
-    override fun <E : Effect> subscribe(listener: Listener<E>, selector: (Effect) -> E?) {
-        unsubscribe(listener)
-
-        listeners.add(ListenerBox(listener, selector))
     }
 }
 

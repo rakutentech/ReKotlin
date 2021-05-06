@@ -113,18 +113,16 @@ interface DispatchStore {
      * Effects are one time events that do not change the state.
      * This notifies all [Effect] listeners.
      *
-     * This <b>will not</b> pass anything to [Middleware], delegate to [Reducer] or change state.
-     *
+     * This **will not** pass anything to [Middleware], delegate to [Reducer] or change state.
      *
      * Example of dispatching an action:
      *
-     * ```
+     * ```kotlin
      * // dispatch an action
      * store.dispatch(CounterAction.IncreaseCounter)
      * // dispatch an effect
      * store.dispatch(AnimationEffect
      * ```
-     *
      *
      * @param dispatchable an action or effect to dispatch to the store
      */
@@ -206,6 +204,8 @@ interface SubscribeStore<State> {
 }
 
 /**
+ * @deprecated Use [composeStores] instead
+ *
  * A root store that can spawn child stores.
  *
  * Children can bootstrap from the root store without the root knowing the children at compile time.
@@ -213,7 +213,7 @@ interface SubscribeStore<State> {
  * This is useful when an application is structured like a tree, with a single root module, that
  * owns shared state used by other features, for example in the diagram below
  *
- * <pre>
+ * ```
  * +---+ +---+ +---+
  * | F | | F | | F |
  * | e | | e | | e |
@@ -225,13 +225,13 @@ interface SubscribeStore<State> {
  * +---------------+
  * |     Root      |
  * +---------------+
- * </pre>
+ * ```
  *
  * Root, feature 1, feature 2 and feature 3 can be different gradle modules, with the features
  * depending on the root. If the root injects a [RootStore] into the feature modules, each feature
  * can use [RootStore.childStore] or [RootStore.plus] to create its own child store.
  *
- * ```
+ * ```kotlin
  * val rootStore: RootStore<RootState> = ... // dependency injection however you like
  * val featureStore: Store<Pair<RootState, FeatureState>> =
  *          rootStore.childStore(::childReducer, initialChildState)
@@ -251,6 +251,7 @@ interface SubscribeStore<State> {
  * declare all [Middleware]s in the root store, all [Action]s passed to any of the stores (parent or
  * child) will pass through the root store's [Middleware]s before reaching any reducers.
  */
+@Deprecated("Use `compositeStore` instead")
 interface RootStore<State> : Store<State> {
     /**
      * A shorthand for [childStore] without an intital state.
@@ -300,13 +301,12 @@ interface RootStore<State> : Store<State> {
  *
  * [Middleware]s can intercept all actions and change the application behavior fundamentally.
  * One such example is the Thunk middleware.
- * // TODO: move thunk to lib
  *
  * To create a store use the [store] function.
  *
- * Applications should have a single store that models the entire application state.
- * If that is not enough for you take a look at [RootStore].
+ * Monolithic applications should have a single store that models the entire application state.
  *
+ * Modularized applications can connect multiple stores in a hierarchy, see [compositeStore].
  */
 interface Store<State> : DispatchStore, SubscribeStore<State> {
 
@@ -317,9 +317,9 @@ interface Store<State> : DispatchStore, SubscribeStore<State> {
 }
 
 /**
- * Create a new state subscriber.
+ * Create a new state [Subscriber].
  *
- * ```
+ * ```kotlin
  * val subscriber = subscriber { state -> /* do something with the state */ }
  * store.subscribe(subscriber)
  * // .. sometime later
@@ -331,9 +331,9 @@ inline fun <S> subscriber(crossinline block: (S) -> Unit) = object : Subscriber<
 }
 
 /**
- * Create new effect listeners.
+ * Create new effect [Listener]s.
  *
- * ```
+ * ```kotlin
  * val listener = listener { effect -> /* do something with the effect */ }
  * store.subscribe(listener)
  * // .. sometime later
@@ -354,49 +354,64 @@ fun <State> store(
     state: State? = null,
     vararg middleware: Middleware<State> = arrayOf()
 ): Store<State> =
-        ParentStore(reducer, state, middleware.toList(), true)
+    ParentStore(reducer, state, middleware.toList(), true)
 
 /**
  * Create a new root store.
  *
  * See [RootStore] for the what, when and why of it all.
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Use `composeStores` instead")
 fun <State> rootStore(
     reducer: Reducer<State>,
     state: State? = null,
     vararg middleware: Middleware<State> = arrayOf()
 ): RootStore<State> =
-        ParentStore(reducer, state, middleware.toList(), true)
+    ParentStore(reducer, state, middleware.toList(), true)
 
 /**
- * Middleware that supports the use of Thunks.
+ * Middleware that supports the use of [Thunk]s.
  *
- * Are the basic building blocks that support asynchronous behavior. A thunk can execute arbitrary
- * code when dispatched to the store. This allows you to execute network calls, do disk IO or long
- * running computations in the background. The Redux contract of state-change-only-through-actions
- * still holds, from within a thunk you can dispatch actions to initiate state changes.
+ * Thunks are the basic building blocks that support asynchronous behavior in Redux. A thunk can
+ * execute arbitrary code when dispatched to the store. This allows you to execute network calls, do
+ * disk IO or long running computations in the background. The Redux contract of
+ * state-change-only-through-actions still holds, from within a thunk you can dispatch actions to
+ * initiate state changes.
  *
- * @see https://github.com/reduxjs/redux-thunk
- * @see https://github.com/ReSwift/ReSwift-Thunk
+ * See [Redux Thunk](https://github.com/reduxjs/redux-thunk) and [ReSwift Thunk](https://github.com/ReSwift/ReSwift-Thunk)
  */
 @Suppress("UNCHECKED_CAST")
 fun <State> thunkMiddleware(): Middleware<State> = { dispatch, getState ->
-            { next ->
-                { action ->
-                    when (val thunk = action as? Thunk<State>) {
-                        is Thunk<State> -> thunk.invoke(dispatch, getState)
-                        else -> next(action)
-                    }
-                }
+    { next ->
+        { action ->
+            when (val thunk = action as? Thunk<State>) {
+                is Thunk<State> -> thunk.invoke(dispatch, getState)
+                else -> next(action)
             }
         }
+    }
+}
 
-// TODO: KDoc
+/**
+ * Thunks are the basic building blocks that support asynchronous behavior in Redux.
+ *
+ * A thunk can execute arbitrary code when dispatched to the store. This allows you to execute network calls, do disk IO
+ * or long running computations in the background. The Redux contract of
+ * state-change-only-through-actions still holds, from within a thunk you can dispatch actions to
+ * initiate state changes.
+ *
+ * See [Redux Thunk](https://github.com/reduxjs/redux-thunk) and [ReSwift Thunk](https://github.com/ReSwift/ReSwift-Thunk)
+ *
+ * Use with [thunkMiddleware].
+ */
 interface Thunk<State> : Action {
     fun invoke(dispatch: DispatchFunction, getState: () -> State?)
 }
 
-// TODO: KDoc
+/**
+ * Factory function for [Thunk].
+ */
 fun <State> thunk(body: (dispatch: DispatchFunction, getState: () -> State?) -> Unit) = object : Thunk<State> {
     override fun invoke(dispatch: DispatchFunction, getState: () -> State?) = body(dispatch, getState)
 }

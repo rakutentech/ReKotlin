@@ -52,8 +52,8 @@ fun navigationReducer(action: Action, oldState: NavigationState?): NavigationSta
 
     return when (action) {
         is SetRouteAction -> state.copy(
-                route = action.route,
-                animated = action.animated
+            route = action.route,
+            animated = action.animated
         )
         else -> state
     }

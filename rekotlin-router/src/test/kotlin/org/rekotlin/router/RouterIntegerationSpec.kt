@@ -25,7 +25,7 @@ class FakeRoutable(
     private val childRoutable: Routable? = null
 ) : Routable {
     override fun popRouteSegment(routeSegment: RouteSegment, animated: Boolean) =
-            pop(routeSegment, animated)
+        pop(routeSegment, animated)
 
     override fun changeRouteSegment(from: RouteSegment, to: RouteSegment, animated: Boolean): Routable {
         change(from, to, animated)
@@ -85,12 +85,12 @@ class RoutingCallTests {
         var childSegment: RouteSegment? = null
 
         val child = FakeRoutable(
-                push = { segment, _ -> childSegment = segment }
+            push = { segment, _ -> childSegment = segment }
         )
 
         val root = FakeRoutable(
-                push = { segment, _ -> rootSegment = segment },
-                childRoutable = child
+            push = { segment, _ -> rootSegment = segment },
+            childRoutable = child
         )
 
         // When
@@ -111,7 +111,7 @@ class RouteArgsTests {
         // Given
         var pushedSegment: RouteSegment? = null
         val routable = FakeRoutable(
-                push = { segment, _ -> pushedSegment = segment }
+            push = { segment, _ -> pushedSegment = segment }
         )
         val router = router(routable)
         store.subscribe(router) { select { navigationState } }
@@ -132,26 +132,28 @@ class RouteArgsTests {
         var grandChildSegment: RouteSegment? = null
 
         val grandChildRoutable = FakeRoutable(
-                push = { segment, _ -> grandChildSegment = segment }
+            push = { segment, _ -> grandChildSegment = segment }
         )
         val childRoutable = FakeRoutable(
-                push = { segment, _ -> childSegment = segment },
-                childRoutable = grandChildRoutable
+            push = { segment, _ -> childSegment = segment },
+            childRoutable = grandChildRoutable
         )
         val routable = FakeRoutable(
-                push = { segment, _ -> rootSegment = segment },
-                childRoutable = childRoutable
+            push = { segment, _ -> rootSegment = segment },
+            childRoutable = childRoutable
         )
 
         val router = router(routable)
         store.subscribe(router) { select { navigationState } }
 
         // When
-        val action = SetRouteAction(Route(
+        val action = SetRouteAction(
+            Route(
                 "root" to 1,
                 "child" to 2,
                 "grandchild" to 3
-        ))
+            )
+        )
         store.dispatch(action)
 
         // Then
@@ -169,7 +171,7 @@ class RoutingAnimationTests {
     @BeforeEach
     fun setup() {
         val routable = FakeRoutable(
-                push = { _, a -> animated.add(a) }
+            push = { _, a -> animated.add(a) }
         )
 
         val router = router(routable)

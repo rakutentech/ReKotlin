@@ -6,7 +6,7 @@ import org.amshove.kluent.shouldEqual
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.Test
 
-internal class RouterTests {
+internal class RouterSpec {
 
     private val root = "root"
     private val counter = "counter"

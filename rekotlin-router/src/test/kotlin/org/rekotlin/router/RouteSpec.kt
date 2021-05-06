@@ -3,7 +3,7 @@ package org.rekotlin.router
 import org.amshove.kluent.shouldEqual
 import org.junit.jupiter.api.Test
 
-class RouteTests {
+class RouteSpec {
 
     @Test
     fun `should add (+) route segment to the end`() {
