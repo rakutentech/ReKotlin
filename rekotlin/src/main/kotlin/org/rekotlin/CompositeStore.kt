@@ -3,6 +3,8 @@ package org.rekotlin
 import java.util.IdentityHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
+internal typealias Compose<State> = (Array<out Store<*>>) -> State
+
 fun <State> compositeStore(
     vararg stores: Store<*>,
     middleware: List<Middleware<State>> = emptyList(),
@@ -38,14 +40,7 @@ private class CompositeStore<State>(
 
     init {
         stores.forEach { store ->
-            store.subscribeProjected { _ ->
-                val prevState = _state
-                val newState = compose(stores)
-                _state = newState
-                subscriptions.forEach {
-                    it.newValues(prevState, newState)
-                }
-            }
+            store.subscribeProjected{ _state = compose(stores) }
             store.subscribe(listener { effect ->
                 if (!effect.isDispatching) {
                     listeners.forEach {
@@ -57,6 +52,14 @@ private class CompositeStore<State>(
     }
 
     private var _state: State? = null
+        set(value) {
+            val oldValue = field
+            field = value
+
+            value?.let {
+                subscriptions.forEach { it.newValues(oldValue, value) }
+            }
+        }
     override val state: State
         get() = _state!!
 
@@ -94,6 +97,7 @@ private class CompositeStore<State>(
         }
 
     override fun <S : Subscriber<State>> subscribe(subscriber: S) = subscribe(subscriber, { this })
+
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
         subscriber: S,
         selector: Subscription<State>.() -> Subscription<SelectedState>
@@ -134,10 +138,10 @@ private class CompositeStore<State>(
     }
 
     private val Effect.isDispatching get() = effectDispatcher.isDispatching(this)
-
-    private inline fun <State> Store<State>.subscribeProjected(crossinline subscriber: (State) -> Unit) =
-        subscribe(subscriber { subscriber(it) })
 }
+
+private inline fun <State> Store<State>.subscribeProjected(crossinline subscriber: (State) -> Unit) =
+    subscribe(subscriber { subscriber(it) })
 
 private class EffectDispatcher {
     private val dispatching = mutableListOf<Effect>()
