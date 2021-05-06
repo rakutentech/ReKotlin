@@ -354,7 +354,7 @@ fun <State> store(
     state: State? = null,
     vararg middleware: Middleware<State> = arrayOf()
 ): Store<State> =
-        ParentStore(reducer, state, middleware.toList(), true)
+    ParentStore(reducer, state, middleware.toList(), true)
 
 /**
  * Create a new root store.
@@ -368,7 +368,7 @@ fun <State> rootStore(
     state: State? = null,
     vararg middleware: Middleware<State> = arrayOf()
 ): RootStore<State> =
-        ParentStore(reducer, state, middleware.toList(), true)
+    ParentStore(reducer, state, middleware.toList(), true)
 
 /**
  * Middleware that supports the use of [Thunk]s.
@@ -383,15 +383,15 @@ fun <State> rootStore(
  */
 @Suppress("UNCHECKED_CAST")
 fun <State> thunkMiddleware(): Middleware<State> = { dispatch, getState ->
-            { next ->
-                { action ->
-                    when (val thunk = action as? Thunk<State>) {
-                        is Thunk<State> -> thunk.invoke(dispatch, getState)
-                        else -> next(action)
-                    }
-                }
+    { next ->
+        { action ->
+            when (val thunk = action as? Thunk<State>) {
+                is Thunk<State> -> thunk.invoke(dispatch, getState)
+                else -> next(action)
             }
         }
+    }
+}
 
 /**
  * Thunks are the basic building blocks that support asynchronous behavior in Redux.

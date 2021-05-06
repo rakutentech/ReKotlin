@@ -131,22 +131,25 @@ private class CompositeStore<State>(
     }
 
     private var dispatchAction: DispatchAction = middlewares.reversed()
-            .fold(this::defaultDispatch as DispatchFunction,
-                    { dispatch, middleware ->
-                        middleware(this::dispatch, this::state)(dispatch)
-                    }
-            )
+        .fold(
+            this::defaultDispatch as DispatchFunction,
+            { dispatch, middleware ->
+                middleware(this::dispatch, this::state)(dispatch)
+            }
+        )
 
     init {
         stores.forEach { store ->
-            store.subscribeProjected{ _state = compose(stores) }
-            store.subscribe(listener { effect ->
-                if (!effect.isDispatching) {
-                    listeners.forEach {
-                        it.onEffect(effect)
+            store.subscribeProjected { _state = compose(stores) }
+            store.subscribe(
+                listener { effect ->
+                    if (!effect.isDispatching) {
+                        listeners.forEach {
+                            it.onEffect(effect)
+                        }
                     }
                 }
-            })
+            )
         }
     }
 

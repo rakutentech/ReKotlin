@@ -73,7 +73,7 @@ internal class ChildStore<State>(
     }
 
     override fun <S : Subscriber<State>> subscribe(subscriber: S) =
-            subscribe(subscriber, ::stateIdentity)
+        subscribe(subscriber, ::stateIdentity)
 
     override fun <SelectedState, S : Subscriber<SelectedState>> subscribe(
         subscriber: S,
@@ -106,10 +106,10 @@ internal class ChildStore<State>(
     private fun <T> noInterruptions(work: () -> T): T {
         if (noInterruptionsPlease) {
             throw Exception(
-                    "ReKotlin:ConcurrentMutationError - " +
-                            "Action has been dispatched while a previous action is being processed. " +
-                            "A reducer is dispatching an action, " +
-                            "or you are using ReKotlin in a concurrent context (e.g. multithreaded)."
+                "ReKotlin:ConcurrentMutationError - " +
+                    "Action has been dispatched while a previous action is being processed. " +
+                    "A reducer is dispatching an action, " +
+                    "or you are using ReKotlin in a concurrent context (e.g. multithreaded)."
             )
         }
 
@@ -121,11 +121,11 @@ internal class ChildStore<State>(
     }
 
     private fun defaultDispatch(dispatchable: Dispatchable) =
-            when (dispatchable) {
-                is Action -> _state = noInterruptions { reducer(dispatchable, _state) }
-                is Effect -> listeners.forEach { it.onEffect(dispatchable) }
-                else -> Unit
-            }
+        when (dispatchable) {
+            is Action -> _state = noInterruptions { reducer(dispatchable, _state) }
+            is Effect -> listeners.forEach { it.onEffect(dispatchable) }
+            else -> Unit
+        }
 
     override fun subscribe(listener: Listener<Effect>) = subscribe(listener, ::effectIdentity)
 

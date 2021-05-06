@@ -22,7 +22,7 @@ fun router(
     rootRoutable: Routable,
     uiThreadHandler: UiThreadHandler = { it() }
 ): Subscriber<NavigationState> =
-        Router(rootRoutable, uiThreadHandler)
+    Router(rootRoutable, uiThreadHandler)
 
 // internal model
 
@@ -80,17 +80,19 @@ internal class Router(
 
                 is Push -> uiThreadHandler {
                     val newRoutable =
-                            routables[action.routableIndex].pushRouteSegment(
-                                    action.segmentToPush, state.animated)
+                        routables[action.routableIndex].pushRouteSegment(
+                            action.segmentToPush, state.animated
+                        )
                     routables.add(newRoutable)
                 }
 
                 is Change -> uiThreadHandler {
                     routables[action.routableIndex + 1] =
-                            routables[action.routableIndex].changeRouteSegment(
-                                    from = action.segmentTeReplace,
-                                    to = action.newSegment,
-                                    animated = state.animated)
+                        routables[action.routableIndex].changeRouteSegment(
+                            from = action.segmentTeReplace,
+                            to = action.newSegment,
+                            animated = state.animated
+                        )
                 }
             }
         }
@@ -102,8 +104,8 @@ private fun largestCommonSubroute(oldRoute: Route, newRoute: Route): Int {
     var index = -1
 
     while (
-            index + 1 < newRoute.count && index + 1 < oldRoute.count &&
-            newRoute[index + 1] == oldRoute[index + 1]
+        index + 1 < newRoute.count && index + 1 < oldRoute.count &&
+        newRoute[index + 1] == oldRoute[index + 1]
     ) {
         index += 1
     }
@@ -149,7 +151,7 @@ internal fun routingActionsForTransitionFrom(oldRoute: Route, newRoute: Route): 
     //  the old route element with the new one"
     if ((oldRoute.count > commonSubroute) && (newRoute.count > commonSubroute)) {
         val changeAction =
-                Change(commonSubroute, oldRoute[commonSubroute], newRoute[commonSubroute])
+            Change(commonSubroute, oldRoute[commonSubroute], newRoute[commonSubroute])
 
         routingActions.add(changeAction)
     }

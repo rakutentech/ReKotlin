@@ -167,7 +167,7 @@ class SubscriberTests {
 
         store.subscribe(subscriber) {
             select { subState }
-                    .skip { oldState, newState -> oldState.value == newState.value }
+                .skip { oldState, newState -> oldState.value == newState.value }
         }
 
         assertEquals(5, subscriber.lastState?.value)
@@ -186,7 +186,7 @@ class SubscriberTests {
 
         store.subscribe(subscriber) {
             select { subState }
-                    .only { oldState, newState -> oldState.value != newState.value }
+                .only { oldState, newState -> oldState.value != newState.value }
         }
 
         assertEquals(5, subscriber.lastState?.value)

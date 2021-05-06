@@ -1,9 +1,9 @@
 package org.rekotlin
 
-import java.util.IdentityHashMap
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.util.IdentityHashMap
 
 // <editor-fold desc="State 1">
 private data class State1(
