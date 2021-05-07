@@ -2,44 +2,44 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>  on ReKotlin Documentation</title>
-    <link>https://rakutentech.github.io/rekotlin/</link>
+    <link>https://rakutentech.github.io/ReKotlin/</link>
     <description>Recent content in   on ReKotlin Documentation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 07 May 2021 15:08:37 +0900</lastBuildDate><atom:link href="https://rakutentech.github.io/rekotlin/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 07 May 2021 15:08:37 +0900</lastBuildDate><atom:link href="https://rakutentech.github.io/ReKotlin/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Quick Start</title>
-      <link>https://rakutentech.github.io/rekotlin/docs/quickstart/</link>
+      <link>https://rakutentech.github.io/ReKotlin/docs/quickstart/</link>
       <pubDate>Fri, 07 May 2021 15:18:06 +0900</pubDate>
       
-      <guid>https://rakutentech.github.io/rekotlin/docs/quickstart/</guid>
+      <guid>https://rakutentech.github.io/ReKotlin/docs/quickstart/</guid>
       <description>Setup ReKotlin dependency and start sending your first Actions!</description>
     </item>
     
     <item>
       <title>Getting Real</title>
-      <link>https://rakutentech.github.io/rekotlin/docs/getting-real/</link>
+      <link>https://rakutentech.github.io/ReKotlin/docs/getting-real/</link>
       <pubDate>Fri, 07 May 2021 15:18:06 +0900</pubDate>
       
-      <guid>https://rakutentech.github.io/rekotlin/docs/getting-real/</guid>
+      <guid>https://rakutentech.github.io/ReKotlin/docs/getting-real/</guid>
       <description>A more realistic usage of ReKotlin</description>
     </item>
     
     <item>
       <title>Why ReKotlin?</title>
-      <link>https://rakutentech.github.io/rekotlin/docs/why/</link>
+      <link>https://rakutentech.github.io/ReKotlin/docs/why/</link>
       <pubDate>Fri, 07 May 2021 15:18:06 +0900</pubDate>
       
-      <guid>https://rakutentech.github.io/rekotlin/docs/why/</guid>
+      <guid>https://rakutentech.github.io/ReKotlin/docs/why/</guid>
       <description>&amp;hellip;but why?</description>
     </item>
     
     <item>
       <title>ReKotlin Router</title>
-      <link>https://rakutentech.github.io/rekotlin/docs/rekotlin-router/</link>
+      <link>https://rakutentech.github.io/ReKotlin/docs/rekotlin-router/</link>
       <pubDate>Fri, 07 May 2021 15:18:06 +0900</pubDate>
       
-      <guid>https://rakutentech.github.io/rekotlin/docs/rekotlin-router/</guid>
+      <guid>https://rakutentech.github.io/ReKotlin/docs/rekotlin-router/</guid>
       <description>Application Routing on top of the ReKotlin store.</description>
     </item>
     
