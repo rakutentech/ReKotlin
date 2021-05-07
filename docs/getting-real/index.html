@@ -163,18 +163,7 @@ store.subscribe(userStateSubscriber) { appState <span style="color:#f92672">-&gt
 </span><span style="color:#75715e"></span>store.subscribe(syntheticSubStateSubscriber) { appState <span style="color:#f92672">-&gt;</span>
         Pair(appState.userState, appState.otherState) <span style="color:#75715e">// transform into synthetic sub-state
 </span><span style="color:#75715e"></span>}
-</code></pre></div><h2 id="full-conceptual-model">Full Conceptual Model</h2>
-<p>ReKotlin relies on a few principles:</p>
-<ul>
-<li><strong><code>Store</code></strong>: maintains your entire app state in the form of a single data structure. This state can only be modified by dispatching Actions to the store. Whenever the state in the store changes, the store will notify all observers.</li>
-<li><strong><code>Action</code></strong>: a declarative description of a state change. Actions don&rsquo;t contain any code, they are consumed by the store (or rather its reducers).</li>
-<li><strong><code>Reducer</code></strong>: a pure function, implements the state transitinon on the current action and the current app state, creating the next app state</li>
-<li><strong><code>Effect</code></strong>: a declarative description of an ephemeral effect that takes place. Like an action that does not change the state.</li>
-<li><strong><code>Subscriber</code></strong>: anybody waiting for state updates or for effects.</li>
-<li><strong><code>Middleware</code></strong>: TODO</li>
-</ul>
-<p><img src="reswift_concept.png" alt=""></p>
-
+</code></pre></div>
 </div>
 </div>
 
