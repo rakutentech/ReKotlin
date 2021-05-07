@@ -36,6 +36,27 @@ publishing {
             from components.java
             artifact(javadocJar)
             artifact(sourcesJar)
+            pom {
+                name = project.name
+                description = project.description
+                url = project.url
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://opensource.org/licenses/MIT"
+                    }
+                }
+                scm {
+                    url = project.scmUrl
+                }
+                developers {
+                    developer {
+                        name = "Nemo Oudeis"
+                        organization = "Rakuten Tech"
+                        organizationUrl = "https://github.com/rakutentech/"
+                    }
+                }
+            }
         }
     }
 
@@ -58,7 +79,7 @@ ext["signing.secretKeyRingFile"] = signingKeyRingFile
 apply plugin: 'signing'
 
 signing {
-    sign publishing.publications
+    sign publishing.publications."${project.name}"
 }
 
 task ensureMavenCentralCredentials {
