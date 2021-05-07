@@ -1,7 +1,7 @@
 # ReKotlin-Router
 
 [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ReSwift/ReSwift/blob/master/LICENSE.md)
-[![Download](https://api.bintray.com/packages/rakutentech/maven-release/rekotlin-router/images/download.svg)](https://bintray.com/rakutentech/maven-release/rekotlin-router/_latestVersion)
+[![Download](https://maven-badges.herokuapp.com/maven-central/io.github.rakutentech.rekotlin/rekotlin-router/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.rakutentech.rekotlin/rekotlin-router)
 [![CircleCI](https://circleci.com/gh/rakutentech/ReKotlin.svg?style=svg)](https://circleci.com/gh/rakutentech/ReKotlin)
 [![codecov](https://codecov.io/gh/rakutentech/ReKotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/rakutentech/ReKotlin)
 
@@ -27,7 +27,7 @@ First add the rekotlin dependency to your build script.
 
 ```groovy
 dependencies {
-  implementation 'com.rakuten.tech.mobile.rekotlin:rekotlin-router:1.0.0-rc1'
+  implementation 'io.github.rakutentech.rekotlin:rekotlin-router:1.0.0'
 }
 ```
 
