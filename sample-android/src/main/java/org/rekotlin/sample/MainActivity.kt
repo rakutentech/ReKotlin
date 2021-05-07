@@ -3,9 +3,9 @@ package org.rekotlin.sample
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.root
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import org.rekotlin.router.Route
@@ -19,7 +19,7 @@ import org.rekotlin.router.router
  */
 class MainActivity : AppCompatActivity() {
     private val store = appStore
-    private val routable by lazy { MainRouter(store, MainScope(), Dispatchers.IO, root) }
+    private val routable by lazy { MainRouter(store, MainScope(), Dispatchers.IO, findViewById<FrameLayout>(R.id.root)) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

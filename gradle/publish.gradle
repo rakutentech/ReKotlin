@@ -18,9 +18,18 @@ artifacts {
     archives javadocJar
 }
 
+// publishing to maven central
+// see https://github.com/rakutentech/android-buildconfig/tree/master/publish
+
+def user =                  System.getenv('MAVEN_CENTRAL_USER')
+def password =              System.getenv('MAVEN_CENTRAL_PASSWORD')
+def signingKeyId =          System.getenv("MAVEN_CENTRAL_SIGNING_KEY_ID")
+def signingPassword =       System.getenv("MAVEN_CENTRAL_SIGNING_PASSWORD")
+def signingKeyRingFile =    System.getenv("MAVEN_CENTRAL_SIGNING_KEY_RING_FILE")
+
 publishing {
     publications {
-        library(MavenPublication) {
+        "${project.name}"(MavenPublication) {
             groupId project.group
             artifactId project.name // explicitly name project so the property won't be shadowed
             version project.version
@@ -29,46 +38,37 @@ publishing {
             artifact(sourcesJar)
         }
     }
-}
 
-// publishing to jcenter
-// see https://github.com/bintray/gradle-bintray-plugin
-apply plugin: 'com.jfrog.bintray'
-
-def user =  System.getenv('BINTRAY_USER')
-def key =   System.getenv('BINTRAY_KEY')
-def repo =  System.getenv('BINTRAY_REPO')
-def org =   System.getenv('BINTRAY_ORG')
-
-bintray {
-    it.user = user
-    it.key = key
-    publications = publishing.publications.collect{ it.name }
-    pkg {
-        it.repo = repo
-        name = project.name
-        userOrg = org
-        websiteUrl = 'https://github.com/rakutentech/ReKotlin'
-        vcsUrl = 'https://github.com/rakutentech/ReKotlin.git'
-        licenses = ["MIT"]
-        publish = true
-        version {
-            name = project.version
-            desc = project.description
-            released = new Date()
-            vcsTag = "${project.name}_v${project.version}"
+    repositories {
+        maven {
+            it.name "MavenCentralStaging"
+            credentials {
+                it.username user
+                it.password password
+            }
+            it.url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
         }
     }
 }
 
-task ensureBintrayCredentials {
-  doFirst {
-    if (!user?.trim() || !key?.trim() || !repo?.trim() || !org?.trim()) {
-      throw new GradleException("You must define environment variables for " +
-              "BINTRAY_USER, BINTRAY_KEY, BINTRAY_REPO and BINTRAY_ORG.")
-    }
-  }
+ext["signing.keyId"] = signingKeyId
+ext["signing.password"] = signingPassword
+ext["signing.secretKeyRingFile"] = signingKeyRingFile
+
+apply plugin: 'signing'
+
+signing {
+    sign publishing.publications
 }
 
-bintrayUpload.dependsOn ensureBintrayCredentials
-publish.dependsOn bintrayUpload
+task ensureMavenCentralCredentials {
+    doFirst {
+        if (!user?.trim() || !password?.trim() || !signingKeyId?.trim() || !signingPassword.trim() || !signingKeyRingFile.trim()) {
+            throw new GradleException("You must define environment variables for " +
+                    "MAVEN_CENTRAL_USER, MAVEN_CENTRAL_PASSWORD, " +
+                    "MAVEN_CENTRAL_SIGNING_KEY_ID, MAVEN_CENTRAL_SIGNING_PASSWORD, and MAVEN_CENTRAL_SIGNING_KEY_RING_FILE.")
+        }
+    }
+}
+
+publish.dependsOn ensureMavenCentralCredentials

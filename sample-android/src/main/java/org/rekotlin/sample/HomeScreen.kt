@@ -3,12 +3,11 @@ package org.rekotlin.sample
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
-import kotlinx.android.synthetic.main.home_screen.view.goToHistory
-import kotlinx.android.synthetic.main.home_screen.view.image
-import kotlinx.android.synthetic.main.home_screen.view.name
-import kotlinx.android.synthetic.main.home_screen.view.progressBar
-import kotlinx.android.synthetic.main.home_screen.view.random
+
 import org.rekotlin.Subscriber
 
 /**
@@ -29,11 +28,11 @@ class HomeScreenPresenter(private val view: HomeScreen) : Subscriber<AppState> {
  */
 class HomeScreen(parent: ViewGroup) {
     val view: ViewGroup = parent.inflate(R.layout.home_screen)
-    private val name: TextView = view.name
-    private val image = view.image
-    private val random = view.random
-    private val goToHistory = view.goToHistory
-    private val progress = view.progressBar
+    private val name: TextView = view.findViewById(R.id.name)
+    private val image: ImageView = view.findViewById(R.id.image)
+    private val random: Button = view.findViewById(R.id.random)
+    private val goToHistory: Button = view.findViewById(R.id.goToHistory)
+    private val progress: ProgressBar = view.findViewById(R.id.progressBar)
 
     fun setName(name: String) {
         this.name.text = name
