@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Why ReKotlin? - ReKotlin Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="icon" href="https://rakutentech.github.io/rekotlin/favicon.svg">
+
+  
+  
+  <link rel="stylesheet" href="/rekotlin/css/style.min.6719d72e323121369d5caeb4264b95d8a63cf1deaab029da67602fe5a046e0a4.css">
+  
+
+  
+
+</head>
+
+<body class='page page-default-single'>
+  <div id="main-menu-mobile" class="main-menu-mobile">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+  <div class="wrapper">
+    <div class='header'>
+  <div class="container">
+    <div class="logo">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div class="logo-mobile">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div id="main-menu" class="main-menu">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+    <button id="toggle-main-menu-mobile" class="hamburger hamburger--slider" type="button">
+  <span class="hamburger-box">
+    <span class="hamburger-inner"></span>
+  </span>
+</button>
+  </div>
+</div>
+
+
+    
+    
+    
+    
+    
+    
+
+    
+    <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
+      <div class="row">
+        <div class="col-12 col-md-3 mb-3">
+          <div class="sidebar">
+            
+<div class="docs-menu">
+  <h4>Docs</h4>
+  <ul>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/quickstart/">Quick Start</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/getting-real/">Getting Real</a>
+    </li>
+    
+    <li class="active ">
+      <a href="https://rakutentech.github.io/rekotlin/docs/why/">Why ReKotlin?</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/rekotlin-router/">ReKotlin Router</a>
+    </li>
+    
+  </ul>
+</div>
+
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          
+<h1 class="title">Why ReKotlin?</h1>
+<div class="content anchor-link-enabled">
+  <h2 id="why-rekotlin">Why ReKotlin?</h2>
+<!-- raw HTML omitted -->
+<p>Model-View-Controller (MVC) is not a holistic application architecture. Typical apps defer a lot of complexity to controllers since MVC doesn&rsquo;t offer other solutions for state management, one of the most complex issues in app development.</p>
+<p>Apps built upon MVC often end up with a lot of complexity around state management and propagation. We need to use callbacks, delegations, Key-Value-Observation and notifications to pass information around in our apps and to ensure that all the relevant views have the latest state.</p>
+<p>This approach involves a lot of manual steps and is thus error prone and doesn&rsquo;t scale well in complex code bases.</p>
+<p>It also leads to code that is difficult to understand at a glance, since dependencies can be hidden deep inside of view controllers. Lastly, you mostly end up with inconsistent code, where each developer uses the state propagation procedure they personally prefer. You can circumvent this issue by style guides and code reviews but you cannot automatically verify the adherence to these guidelines.</p>
+<p>ReKotlin attempts to solve these problems by placing strong constraints on the way applications can be written. This reduces the room for programmer error and leads to applications that can be easily understood - by inspecting the application state data structure, the actions and the reducers.</p>
+<p>This architecture provides further benefits beyond improving your code base:</p>
+<ul>
+<li>Stores, Reducers, Actions and extensions such as <a href="https://github.com/ReKotlin/rekotlin-router">ReKotlin Router</a>  are entirely platform independent - you can easily use the same business logic and share it between apps for multiple platforms</li>
+</ul>
+<p>The ReKotlin tooling is still in a very early stage, but aforementioned prospects excite us and hopefully others in the community as well!</p>
+
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="sub-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="sub-footer-inner">
+          <ul>
+            <li class="zerostatic"><a href="https://www.zerostatic.io">www.zerostatic.io</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  
+  
+
+  
+  <script type="text/javascript" src="/rekotlin/js/scripts.min.eaf147370baecdd07c022597db631f99cab1c9cd6479de586f30327a568d6a0f.js"></script>
+  
+
+  
+  
+  
+    
+  
+
+
+</body>
+
+</html>

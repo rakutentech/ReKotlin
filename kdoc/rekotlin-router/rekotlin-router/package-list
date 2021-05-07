@@ -1,0 +1,39 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:org.rekotlin.router////PointingToDeclaration/rekotlin-router/org.rekotlin.router/index.html
+$dokka.location:org.rekotlin.router//navigationReducer/#org.rekotlin.Action#org.rekotlin.router.NavigationState?/PointingToDeclaration/rekotlin-router/org.rekotlin.router/navigation-reducer.html
+$dokka.location:org.rekotlin.router//router/#org.rekotlin.router.Routable#kotlin.Function1[kotlin.Function0[kotlin.Unit],kotlin.Unit]/PointingToDeclaration/rekotlin-router/org.rekotlin.router/router.html
+$dokka.location:org.rekotlin.router/NavigationState///PointingToDeclaration/rekotlin-router/org.rekotlin.router/-navigation-state/index.html
+$dokka.location:org.rekotlin.router/NavigationState/NavigationState/#org.rekotlin.router.Route#kotlin.Boolean/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-navigation-state/-navigation-state.html
+$dokka.location:org.rekotlin.router/NavigationState/animated/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-navigation-state/animated.html
+$dokka.location:org.rekotlin.router/NavigationState/route/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-navigation-state/route.html
+$dokka.location:org.rekotlin.router/Routable///PointingToDeclaration/rekotlin-router/org.rekotlin.router/-routable/index.html
+$dokka.location:org.rekotlin.router/Routable/changeRouteSegment/#org.rekotlin.router.RouteSegment#org.rekotlin.router.RouteSegment#kotlin.Boolean/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-routable/change-route-segment.html
+$dokka.location:org.rekotlin.router/Routable/popRouteSegment/#org.rekotlin.router.RouteSegment#kotlin.Boolean/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-routable/pop-route-segment.html
+$dokka.location:org.rekotlin.router/Routable/pushRouteSegment/#org.rekotlin.router.RouteSegment#kotlin.Boolean/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-routable/push-route-segment.html
+$dokka.location:org.rekotlin.router/Route///PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/index.html
+$dokka.location:org.rekotlin.router/Route/Route/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/-route.html
+$dokka.location:org.rekotlin.router/Route/Route/#kotlin.Array[kotlin.Pair[kotlin.String,kotlin.Any?]]/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/-route.html
+$dokka.location:org.rekotlin.router/Route/Route/#kotlin.Array[kotlin.String]/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/-route.html
+$dokka.location:org.rekotlin.router/Route/Route/#kotlin.Array[org.rekotlin.router.RouteSegment]/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/-route.html
+$dokka.location:org.rekotlin.router/Route/Route/#kotlin.collections.List[org.rekotlin.router.RouteSegment]/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/-route.html
+$dokka.location:org.rekotlin.router/Route/contains/#org.rekotlin.router.RouteSegment/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/contains.html
+$dokka.location:org.rekotlin.router/Route/count/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/count.html
+$dokka.location:org.rekotlin.router/Route/get/#kotlin.Int/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/get.html
+$dokka.location:org.rekotlin.router/Route/isEmpty/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/is-empty.html
+$dokka.location:org.rekotlin.router/Route/minus/#org.rekotlin.router.RouteSegment/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/minus.html
+$dokka.location:org.rekotlin.router/Route/plus/#org.rekotlin.router.RouteSegment/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/plus.html
+$dokka.location:org.rekotlin.router/Route/segments/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/segments.html
+$dokka.location:org.rekotlin.router/Route/toString/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route/to-string.html
+$dokka.location:org.rekotlin.router/RouteSegment///PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route-segment/index.html
+$dokka.location:org.rekotlin.router/RouteSegment/RouteSegment/#kotlin.Pair[kotlin.String,kotlin.Any?]/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route-segment/-route-segment.html
+$dokka.location:org.rekotlin.router/RouteSegment/RouteSegment/#kotlin.String#kotlin.Any?/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route-segment/-route-segment.html
+$dokka.location:org.rekotlin.router/RouteSegment/args/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route-segment/args.html
+$dokka.location:org.rekotlin.router/RouteSegment/id/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route-segment/id.html
+$dokka.location:org.rekotlin.router/RouteSegment/toString/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-route-segment/to-string.html
+$dokka.location:org.rekotlin.router/SetRouteAction///PointingToDeclaration/rekotlin-router/org.rekotlin.router/-set-route-action/index.html
+$dokka.location:org.rekotlin.router/SetRouteAction/SetRouteAction/#org.rekotlin.router.Route#kotlin.Boolean/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-set-route-action/-set-route-action.html
+$dokka.location:org.rekotlin.router/SetRouteAction/animated/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-set-route-action/animated.html
+$dokka.location:org.rekotlin.router/SetRouteAction/route/#/PointingToDeclaration/rekotlin-router/org.rekotlin.router/-set-route-action/route.html
+org.rekotlin.router
+

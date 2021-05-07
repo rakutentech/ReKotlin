@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Getting Real - ReKotlin Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="icon" href="https://rakutentech.github.io/rekotlin/favicon.svg">
+
+  
+  
+  <link rel="stylesheet" href="/rekotlin/css/style.min.6719d72e323121369d5caeb4264b95d8a63cf1deaab029da67602fe5a046e0a4.css">
+  
+
+  
+
+</head>
+
+<body class='page page-default-single'>
+  <div id="main-menu-mobile" class="main-menu-mobile">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+  <div class="wrapper">
+    <div class='header'>
+  <div class="container">
+    <div class="logo">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div class="logo-mobile">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div id="main-menu" class="main-menu">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+    <button id="toggle-main-menu-mobile" class="hamburger hamburger--slider" type="button">
+  <span class="hamburger-box">
+    <span class="hamburger-inner"></span>
+  </span>
+</button>
+  </div>
+</div>
+
+
+    
+    
+    
+    
+    
+    
+
+    
+    <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
+      <div class="row">
+        <div class="col-12 col-md-3 mb-3">
+          <div class="sidebar">
+            
+<div class="docs-menu">
+  <h4>Docs</h4>
+  <ul>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/quickstart/">Quick Start</a>
+    </li>
+    
+    <li class="active ">
+      <a href="https://rakutentech.github.io/rekotlin/docs/getting-real/">Getting Real</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/why/">Why ReKotlin?</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/rekotlin-router/">ReKotlin Router</a>
+    </li>
+    
+  </ul>
+</div>
+
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          
+<h1 class="title">Getting Real</h1>
+<div class="content anchor-link-enabled">
+  <p>Your application will have more than a meager integer as state, a more realistic state will be a tree of data classes, which contain substates. To work with sub states you can use multiple subscribers and select only what each subscriber cares about (single responsibility 😉)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">data</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AppState</span>(
+    <span style="color:#66d9ef">val</span> userState: UserState,
+    <span style="color:#66d9ef">val</span> networkState: NetworkState,
+    <span style="color:#66d9ef">val</span> otherState: OtherState,
+    <span style="color:#66d9ef">val</span> yetAnotherState: YetAnotherState <span style="color:#75715e">// you get the idea
+</span><span style="color:#75715e"></span>)
+
+<span style="color:#75715e">// each state in turn is a data class, we&#39;ll skip the details for brevity
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">val</span> store : Store&lt;AppStore&gt; = <span style="color:#75715e">// create as above
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">val</span> userStateSubscriber = subscriber { userState: UserState <span style="color:#f92672">-&gt;</span>
+    <span style="color:#75715e">/* do what you have to do */</span>
+}
+
+<span style="color:#66d9ef">val</span> syntheticSubStateSubscriber = subscriber { synthSubState: Pair&lt;UserState, OtherState&gt; <span style="color:#f92672">-&gt;</span>
+    <span style="color:#75715e">/* do what you have to do */</span>
+}
+
+store.subscribe(userStateSubscriber) { appState <span style="color:#f92672">-&gt;</span> appState.userState } <span style="color:#75715e">// select only the user state
+</span><span style="color:#75715e"></span>store.subscribe(syntheticSubStateSubscriber) { appState <span style="color:#f92672">-&gt;</span>
+        Pair(appState.userState, appState.otherState) <span style="color:#75715e">// transform into synthetic sub-state
+</span><span style="color:#75715e"></span>}
+</code></pre></div><h2 id="full-conceptual-model">Full Conceptual Model</h2>
+<p>ReKotlin relies on a few principles:</p>
+<ul>
+<li><strong><code>Store</code></strong>: maintains your entire app state in the form of a single data structure. This state can only be modified by dispatching Actions to the store. Whenever the state in the store changes, the store will notify all observers.</li>
+<li><strong><code>Action</code></strong>: a declarative description of a state change. Actions don&rsquo;t contain any code, they are consumed by the store (or rather its reducers).</li>
+<li><strong><code>Reducer</code></strong>: a pure function, implements the state transitinon on the current action and the current app state, creating the next app state</li>
+<li><strong><code>Effect</code></strong>: a declarative description of an ephemeral effect that takes place. Like an action that does not change the state.</li>
+<li><strong><code>Subscriber</code></strong>: anybody waiting for state updates or for effects.</li>
+<li><strong><code>Middleware</code></strong>: TODO</li>
+</ul>
+<p><img src="reswift_concept.png" alt=""></p>
+
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="sub-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="sub-footer-inner">
+          <ul>
+            <li class="zerostatic"><a href="https://www.zerostatic.io">www.zerostatic.io</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  
+  
+
+  
+  <script type="text/javascript" src="/rekotlin/js/scripts.min.eaf147370baecdd07c022597db631f99cab1c9cd6479de586f30327a568d6a0f.js"></script>
+  
+
+  
+  
+  
+    
+  
+
+
+</body>
+
+</html>

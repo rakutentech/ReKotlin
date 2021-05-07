@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Quick Start - ReKotlin Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="icon" href="https://rakutentech.github.io/rekotlin/favicon.svg">
+
+  
+  
+  <link rel="stylesheet" href="/rekotlin/css/style.min.6719d72e323121369d5caeb4264b95d8a63cf1deaab029da67602fe5a046e0a4.css">
+  
+
+  
+
+</head>
+
+<body class='page page-default-single'>
+  <div id="main-menu-mobile" class="main-menu-mobile">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+  <div class="wrapper">
+    <div class='header'>
+  <div class="container">
+    <div class="logo">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div class="logo-mobile">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div id="main-menu" class="main-menu">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+    <button id="toggle-main-menu-mobile" class="hamburger hamburger--slider" type="button">
+  <span class="hamburger-box">
+    <span class="hamburger-inner"></span>
+  </span>
+</button>
+  </div>
+</div>
+
+
+    
+    
+    
+    
+    
+    
+
+    
+    <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
+      <div class="row">
+        <div class="col-12 col-md-3 mb-3">
+          <div class="sidebar">
+            
+<div class="docs-menu">
+  <h4>Docs</h4>
+  <ul>
+    
+    <li class="active ">
+      <a href="https://rakutentech.github.io/rekotlin/docs/quickstart/">Quick Start</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/getting-real/">Getting Real</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/why/">Why ReKotlin?</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/rekotlin-router/">ReKotlin Router</a>
+    </li>
+    
+  </ul>
+</div>
+
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          
+<h1 class="title">Quick Start</h1>
+<div class="content anchor-link-enabled">
+  <p>First add the ReKotlin dependency to your build script.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">dependencies <span style="color:#f92672">{</span>
+  implementation <span style="color:#e6db74">&#39;io.github.rakutentech.rekotlin:rekotlin:2.1.0&#39;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>For a very simple app, that maintains a counter that can be increased and decreased, you can define the app state as following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">typealias</span> AppState = Int?
+</code></pre></div><p>To change the state you define actions, one for increasing and one for decreasing the state. For the simple actions in this example we can define empty data classes that conform to action:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">data</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">IncrementAction</span>(<span style="color:#66d9ef">val</span> amount: Int = <span style="color:#ae81ff">1</span>): Action
+<span style="color:#66d9ef">data</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DecrementAction</span>(<span style="color:#66d9ef">val</span> amount: Int = <span style="color:#ae81ff">1</span>): Action
+</code></pre></div><p>The reducer needs to handle actions to create the changed state:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">reducer</span>(action: Action, oldState: AppState?): AppState {
+    <span style="color:#75715e">// if no state has been provided, create the default state
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> state = oldState <span style="color:#f92672">?:</span> <span style="color:#ae81ff">0</span>
+
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">when</span>(action){
+        <span style="color:#66d9ef">is</span> IncrementAction <span style="color:#f92672">-&gt;</span>  state + action.amount
+        <span style="color:#66d9ef">is</span> DecrementAction <span style="color:#f92672">-&gt;</span> state - action.amount
+    }
+}
+</code></pre></div><p>Reducers must be pure functions without side effects.</p>
+<p>To maintain our application state we need to wire it all up in a store:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">val</span> store = store(
+     reducer = <span style="color:#f92672">::</span>reducer,
+     state = <span style="color:#ae81ff">7</span> <span style="color:#75715e">// the initial state is optional
+</span><span style="color:#75715e"></span>)
+<span style="color:#75715e">// or more concisely
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">val</span> store = store(<span style="color:#f92672">::</span>reducer)
+</code></pre></div><p>Lastly, your want to observe the state in order to render it to the user.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CounterViewComponent</span>(
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">val</span> label: TextView,
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">val</span> button: Button,
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">val</span> store: Store&lt;AppState&gt;
+) : Subscriber&lt;AppState&gt; {
+
+    <span style="color:#66d9ef">init</span> {
+        store.subscribe(<span style="color:#66d9ef">this</span>) <span style="color:#75715e">// (1)
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// you will need to call store.unsubscribe to stop being notified of state changes,
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// for example in an onPause or onDestroy lifecycle callback.
+</span><span style="color:#75715e"></span>
+        button.setOnClickListener { store.dispach(IncrementAction()) } <span style="color:#75715e">// (2)
+</span><span style="color:#75715e"></span>    }
+
+    <span style="color:#66d9ef">override</span> <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">newState</span>(state: AppState) { <span style="color:#75715e">// (3)
+</span><span style="color:#75715e"></span>        label.text = <span style="color:#e6db74">&#34;We are counting.... so far we have: </span><span style="color:#e6db74">${state}</span><span style="color:#e6db74">&#34;</span>
+    }
+}
+</code></pre></div><p>Let&rsquo;s look in more detail at the numbered lines:</p>
+<ol>
+<li>Subscribing to the store will cause the <code>CounterViewComponent</code> to receive state updates from now on. At subscribe time it will be called once to receive the current state.</li>
+<li>When the user clicks the button we will dispatch an action, triggering a state change in our store - which will notify <code>CounterViewComponent</code> once the reducers have determined the new state!</li>
+<li>Here we render the application state for the user, whenever the state changes, we re-render it (or what has changed - it&rsquo;s really up to you)</li>
+</ol>
+<p>Here you go, your first fully functional unidirectional data flow! 🎉</p>
+
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="sub-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="sub-footer-inner">
+          <ul>
+            <li class="zerostatic"><a href="https://www.zerostatic.io">www.zerostatic.io</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  
+  
+
+  
+  <script type="text/javascript" src="/rekotlin/js/scripts.min.eaf147370baecdd07c022597db631f99cab1c9cd6479de586f30327a568d6a0f.js"></script>
+  
+
+  
+  
+  
+    
+  
+
+
+</body>
+
+</html>

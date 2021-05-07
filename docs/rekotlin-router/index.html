@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>ReKotlin Router - ReKotlin Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="icon" href="https://rakutentech.github.io/rekotlin/favicon.svg">
+
+  
+  
+  <link rel="stylesheet" href="/rekotlin/css/style.min.6719d72e323121369d5caeb4264b95d8a63cf1deaab029da67602fe5a046e0a4.css">
+  
+
+  
+
+</head>
+
+<body class='page page-default-single'>
+  <div id="main-menu-mobile" class="main-menu-mobile">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+  <div class="wrapper">
+    <div class='header'>
+  <div class="container">
+    <div class="logo">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div class="logo-mobile">
+      <a href="https://rakutentech.github.io/rekotlin"><img alt="Logo" src="/rekotlin/logo.svg" /></a>
+    </div>
+    <div id="main-menu" class="main-menu">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/rekotlin/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-user guide">
+      <a href="/rekotlin/docs">
+        <span>User Guide</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin kdocs">
+      <a href="/rekotlin/kdoc/rekotlin">
+        <span>ReKotlin KDocs</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-rekotlin-routen kdocs">
+      <a href="/rekotlin/kdoc/rekotlin-router">
+        <span>ReKotlin-Routen KDocs</span>
+      </a>
+    </li>
+    
+  </ul>
+</div>
+    <button id="toggle-main-menu-mobile" class="hamburger hamburger--slider" type="button">
+  <span class="hamburger-box">
+    <span class="hamburger-inner"></span>
+  </span>
+</button>
+  </div>
+</div>
+
+
+    
+    
+    
+    
+    
+    
+
+    
+    <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
+      <div class="row">
+        <div class="col-12 col-md-3 mb-3">
+          <div class="sidebar">
+            
+<div class="docs-menu">
+  <h4>Docs</h4>
+  <ul>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/quickstart/">Quick Start</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/getting-real/">Getting Real</a>
+    </li>
+    
+    <li class="">
+      <a href="https://rakutentech.github.io/rekotlin/docs/why/">Why ReKotlin?</a>
+    </li>
+    
+    <li class="active ">
+      <a href="https://rakutentech.github.io/rekotlin/docs/rekotlin-router/">ReKotlin Router</a>
+    </li>
+    
+  </ul>
+</div>
+
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          
+<h1 class="title">ReKotlin Router</h1>
+<div class="content anchor-link-enabled">
+  <p>A declarative router for <a href="https://github.com/rakutentech/ReKotlin">ReKotlin</a>. Declare routes like URL paths on the web.</p>
+<p>With ReKotlin-Router you can navigate your app by defining the target route in the form of a URL-path-like sequence of identifiers:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">val</span> route = Route(<span style="color:#e6db74">&#34;login&#34;</span>, <span style="color:#e6db74">&#34;repoList&#34;</span>) <span style="color:#75715e">// mirrors /login/repolist URL path
+</span><span style="color:#75715e"></span>store.dispatch(SetRouteAction(action))
+
+<span style="color:#66d9ef">val</span> nextRoute = route + RouteSegment(<span style="color:#e6db74">&#34;repoDetail&#34;</span>, <span style="color:#ae81ff">123L</span>) <span style="color:#75715e">// Route with parameter, similar to URL query parameters
+</span><span style="color:#75715e"></span>store.dispatch(SetRouteAction(nextRoute))
+</code></pre></div><h2 id="about-rekotlin-router">About ReKotlin-Router</h2>
+<p>In ReKotlin <strong>all</strong> state changes are triggred by actions - this includes changes to the navigation state. As a consequence the current navigation state is part of the overall app state. Moreovere you use actions to trigger navigation changes.</p>
+<h2 id="quickstart">Quickstart</h2>
+<p>First add the rekotlin dependency to your build script.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">dependencies <span style="color:#f92672">{</span>
+  implementation <span style="color:#e6db74">&#39;io.github.rakutentech.rekotlin:rekotlin-router:1.0.0&#39;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>Next add the navigation state to your application state.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">import</span> org.rekotlin.router.NavigationState
+
+<span style="color:#66d9ef">data</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AppState</span>(
+    <span style="color:#66d9ef">override</span> <span style="color:#66d9ef">val</span> navigationState: NavigationState,
+    <span style="color:#75715e">// other application states such as....
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> otherState: OtherState,
+    <span style="color:#66d9ef">val</span> yetAnotherState: YetAnthorState
+)
+</code></pre></div><p>Next use the navigation state reducer in your application&rsquo;s top level reducer. Delegate all navigation state changes to the libraries reducer.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">import</span> org.rekotlin.router.navigationReducer
+
+<span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">appReducer</span>(action: Action, oldState: AppState?) : AppState {
+    <span style="color:#75715e">// Initialize default state if we have none yet
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> state = oldState <span style="color:#f92672">?:</span> AppState()
+
+    <span style="color:#66d9ef">return</span> state.copy(
+        navigationState = navigationReducer(action, state.navigationState),
+        <span style="color:#75715e">// other application state reducers such as....
+</span><span style="color:#75715e"></span>        otherState = otherReducer(action, state.otherState),
+        yetAnotherState = yetAnotherReducer(action, state.yetAnotherState)
+    )
+}
+</code></pre></div><p>Next create a <code>router</code> and subscribe it to your <code>store</code>, so it can react to navigation state changes. In order to create a <code>router</code> you need to pass a <code>Routable</code> - it is the root of your routing tree - and a <code>MainThreadHandler</code> to allow the library to reliably execute on the main thread to iniate navigation changes.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#75715e">// create router
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">val</span> router = router(rootRoutable = <span style="color:#75715e">/* your root routable */</span>, Handler(Looper.getMainLooper())<span style="color:#f92672">::</span>post)
+<span style="color:#75715e">// subscribe it to navigationState changes
+</span><span style="color:#75715e"></span>store.subscribe(router) { select { navigationState } }
+</code></pre></div><p>Now you&rsquo;re all set for routing 🎉, you can set a route by dispatching a <code>SetRouteAction</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin">store.dispatch(SetRouteAction(Route(<span style="color:#e6db74">&#34;home&#34;</span>, <span style="color:#e6db74">&#34;user&#34;</span>)))
+</code></pre></div><p>But where does the actual UI routing happing you might ask - which brings us to the <code>Routable</code> interface!</p>
+<h2 id="implementing-routable">Implementing <code>Routable</code></h2>
+<p>A Route is similar to a URL path, it is a sequence of identifiers e.g. <code>[&quot;home&quot;, &quot;user&quot;, &quot;user-detail&quot;]</code> - in a web url this might be <code>/home/user/user-detail/</code>. In ReKotlin-Router we use <code>Routable</code>s to implement the UI interaction to each route segment.</p>
+<p>Each route segment mas to a <code>Routable</code> - that routable is responsible for that segment. For example</p>
+<ul>
+<li><code>&quot;home&quot; -&gt; HomeRoutable</code></li>
+<li><code>&quot;user&quot; -&gt; UserRoutable</code></li>
+<li><code>&quot;user-detail&quot; -&gt; UserDetailRoutable</code></li>
+</ul>
+<p>The <code>Routable</code> needs to present a child, hide a child or replace a child with another child. In our example the <code>HomeRoutable</code> needs to present the <code>UserRoutable</code>.</p>
+<p>Each <code>Routable</code> implements the following interface:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Routable</span> {
+    <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">pushRouteSegment</span>(routeSegment: RouteSegment, animated: Boolean = <span style="color:#66d9ef">false</span>): Routable
+    <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">popRouteSegment</span>(routeSegment: RouteSegment, animated: Boolean = <span style="color:#66d9ef">false</span>)
+    <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">changeRouteSegment</span>(from: RouteSegment, to: RouteSegment, animated: Boolean = <span style="color:#66d9ef">false</span>): Routable
+}
+</code></pre></div><p>The <code>Routable</code> you pass to <code>router</code>  is the root of your navigation tree, it is responsible for the first route segment, e.g. <code>&quot;home&quot;</code>.</p>
+<p>Whenever a <code>Routable</code> pushes a new route segment, it returns a new <code>Routable</code>. That <code>Routeable</code> will be responsible for managing the presented segment. For example if you want to navigate from <code>[&quot;home&quot;]</code> to <code>[&quot;home&quot;, &quot;users&quot;]</code> the <code>HomeRoutable</code> segment will be asked to present the <code>&quot;user&quot;</code> segment. <code>HomeRoutable</code> should present the user detail UI and return the <code>UserRoutable</code></p>
+<p>If your navigation stack uses a modal presentation for this transition, the implementation of <code>Routable</code> for the <code>&quot;Root&quot;</code> segment might look like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">HomeRoutable</span>: Routable {
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">val</span> userRoutable: UserRoutable = <span style="color:#75715e">/* dependency injection */</span>
+
+    <span style="color:#66d9ef">override</span> <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">popRouteSegment</span>(routeSegment: RouteSegment, animated: Boolean) =
+        TODO(<span style="color:#e6db74">&#34;not implemented&#34;</span>)
+
+    <span style="color:#66d9ef">override</span> <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">pushRouteSegment</span>(routeSegment: RouteSegment, animated: Boolean) =
+        <span style="color:#66d9ef">if</span>(routeSegment.id <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;user&#34;</span>) {
+            userRoutable
+        } <span style="color:#66d9ef">else</span> {
+            <span style="color:#75715e">/* default child routable */</span>
+        }
+
+    <span style="color:#66d9ef">override</span> <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">changeRouteSegment</span>(from: RouteSegment, to: RouteSegment, animated: Boolean): Routable =
+       TODO(<span style="color:#e6db74">&#34;not implemented&#34;</span>)
+}
+</code></pre></div><h2 id="changing-the-current-route">Changing the Current Route</h2>
+<p>To change the current route you dispatch a <code>SetRouteAction</code> with an absolute route.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">val</span> action = SetRouteAction(Route(<span style="color:#e6db74">&#34;home&#34;</span>, <span style="color:#e6db74">&#34;user&#34;</span>))
+store.dispatch(action)
+</code></pre></div><p>Similar to URL query parameters <code>Route</code>s can have parameters.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#66d9ef">val</span> userDetailSegment = RouteSegment(<span style="color:#e6db74">&#34;userDetail&#34;</span> to mapOf(<span style="color:#e6db74">&#34;id&#34;</span> to <span style="color:#ae81ff">123</span>, <span style="color:#e6db74">&#34;name&#34;</span> to <span style="color:#e6db74">&#34;nemo&#34;</span>))
+<span style="color:#66d9ef">val</span> route = Route(<span style="color:#e6db74">&#34;home&#34;</span>, <span style="color:#e6db74">&#34;user&#34;</span>) + userDetailSegment
+store.dispatch(SetRouteAction(route))
+</code></pre></div><p>The <code>Routable</code> will receive a <code>RouteSegment</code> with all arguments.</p>
+<h2 id="contributing">Contributing</h2>
+<p>There&rsquo;s still a lot of work to do here! We would love to see you involved!</p>
+<h3 id="submitting-patches">Submitting patches</h3>
+<p>The best way to submit a patch is to <a href="https://help.github.com/articles/fork-a-repo/">fork the project on github</a> then send us a
+<a href="https://help.github.com/articles/creating-a-pull-request/">pull request</a> via <a href="https://github.com">github</a>.</p>
+<p>Before submitting the pull request, make sure all existing tests are passing, and add the new test if it is required.</p>
+
+</div>
+</div>
+
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="sub-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="sub-footer-inner">
+          <ul>
+            <li class="zerostatic"><a href="https://www.zerostatic.io">www.zerostatic.io</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  
+  
+
+  
+  <script type="text/javascript" src="/rekotlin/js/scripts.min.eaf147370baecdd07c022597db631f99cab1c9cd6479de586f30327a568d6a0f.js"></script>
+  
+
+  
+  
+  
+    
+  
+
+
+</body>
+
+</html>
