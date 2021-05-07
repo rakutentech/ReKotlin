@@ -21,7 +21,7 @@ For a very simple app, that maintains a counter that can be increased and decrea
 typealias AppState = Int?
 ```
 
-To change the satte you define actions, one for increasing and one for decreasing the state. For the simple actions in this example we can define empty data classes that conform to action:
+To change the state you define actions, one for increasing and one for decreasing the state. For the simple actions in this example we can define empty data classes that conform to action:
 
 ```kotlin
 data class IncrementAction(val amount: Int = 1): Action
