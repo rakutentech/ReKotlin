@@ -4,14 +4,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.history_screen.view.historyList
 
 /**
  * A view class that hides the android specific UI code from our application logic.
  */
 class HistoryScreen(parent: ViewGroup) {
     val view: ViewGroup = parent.inflate(R.layout.history_screen)
-    private val recycler = view.historyList
+    private val recycler: RecyclerView = view.findViewById(R.id.historyList)
     private val adapter = HistoryAdapter()
 
     init {

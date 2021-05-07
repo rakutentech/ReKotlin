@@ -32,4 +32,4 @@ This repository is a collection of libraries that implement and leverage the uni
 
 - [ReKotlin](rekotlin): Implementation of the core concept
 - [ReKotlin-Router](rekotlin-router): A routing library on top of ReKotlin, for expressive URL-like routing
-- [Android Sample App](sample): A sample illustrating how you can use ReKotlin and ReKotlin-Router in an android application.
+- [Android Sample App](sample-android): A sample illustrating how you can use ReKotlin and ReKotlin-Router in an android application.
