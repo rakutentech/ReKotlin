@@ -1,0 +1,45 @@
+baseURL: https://rakutentech.github.io/ReKotlin
+languageCode: en-us
+title: ReKotlin Documentation
+theme: whisper
+
+menu:
+  main:
+    - name: "Home"
+      url: "/"
+      weight: 1
+    - name: "User Guide"
+      url: "/docs"
+      weight: 2
+    - name: "ReKotlin KDocs"
+      url: "/kdoc/rekotlin"
+      weight: 3
+    - name: "ReKotlin-Router KDocs"
+      url: "/kdoc/rekotlin-router"
+      weight: 3
+
+
+params:
+  # google_analytics_id: ""
+  homepage_button_link: '/docs'
+  homepage_button_text: 'Read The Docs'
+  # homepage_intro: 'Whisper is a documentation theme built with Hugo. The design and functionality is intentionally minimal.'
+  # homepage_image: '/logo.svg'
+
+  ## You can enable to add anchor links to header elements
+  enable_anchor_link: true
+
+  homepage_meta_tags:
+    # meta_description: "Hugo Whisper is a documentation theme built with Hugo."
+    # meta_og_title: "Hugo Whisper Theme"
+    # meta_og_type: "website"
+    # meta_og_url: "https://hugo-whisper.netlify.app"
+    # meta_og_image: "https://raw.githubusercontent.com/JugglerX/hugo-whisper-theme/master/images/tn.png"
+    # meta_og_description: "Hugo Whisper is a documentation theme built with Hugo."
+    # meta_twitter_card: "summary"
+    # meta_twitter_site: "@handle"
+    # meta_twitter_creator: "@handle"
+
+  logo:
+    mobile: "/logo.svg"
+    standard : "/logo.svg"

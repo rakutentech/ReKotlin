@@ -10,3 +10,6 @@ build
 *.iml
 .env
 maven-central-key.gpg
+/docs/static/kdoc
+/docs/public
+/docs/resources/_gen
