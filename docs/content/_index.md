@@ -6,4 +6,6 @@ draft: false
 
 ![](logo.svg)
 
-Unidirectional dataflow for Kotlin. Inspired by Redux.
+Unidirectional data flow for Kotlin applications.
+
+Inspired by [Redux](https://github.com/reactjs/redux) and [Mobius](https://github.com/spotify/mobius).
