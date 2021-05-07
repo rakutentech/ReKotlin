@@ -25,6 +25,9 @@ allprojects {
             exceptionFormat "short"
         }
     }
+}
+
+subprojects {
     apply plugin: 'org.jetbrains.dokka'
 
     apply from: "${rootDir}/gradle/jacoco.gradle"

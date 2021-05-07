@@ -29,7 +29,7 @@ def signingKeyRingFile =    System.getenv("MAVEN_CENTRAL_SIGNING_KEY_RING_FILE")
 
 publishing {
     publications {
-        library(MavenPublication) {
+        "${project.name}"(MavenPublication) {
             groupId project.group
             artifactId project.name // explicitly name project so the property won't be shadowed
             version project.version
