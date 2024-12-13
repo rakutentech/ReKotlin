@@ -75,7 +75,10 @@ internal class Router(
             when (action) {
                 is Pop -> uiThreadHandler {
                     routables[action.routableIndex].popRouteSegment(action.segmentToPop, state.animated)
-                    routables.removeAt(action.routableIndex + 1)
+                    val itemIndex = action.routableIndex + 1
+                    if (itemIndex < routables.size) {
+                        routables.removeAt(itemIndex)
+                    }
                 }
 
                 is Push -> uiThreadHandler {
