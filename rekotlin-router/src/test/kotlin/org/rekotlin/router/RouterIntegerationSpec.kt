@@ -1,6 +1,9 @@
 package org.rekotlin.router
 
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBeFalse
+import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.rekotlin.Action
@@ -118,7 +121,7 @@ class RoutingCallTests {
         store.dispatch(newRouteAction) // moving to different route segment under the same common-sub-route(root)
 
         // Then
-        isPopCalled shouldBeEqualTo true
+        isPopCalled.shouldBeTrue()
     }
 }
 
