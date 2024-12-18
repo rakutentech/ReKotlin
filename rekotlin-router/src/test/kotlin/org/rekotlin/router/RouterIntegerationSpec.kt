@@ -1,9 +1,6 @@
 package org.rekotlin.router
 
-import org.amshove.kluent.shouldBeFalse
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldEqual
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.rekotlin.Action
@@ -100,6 +97,28 @@ class RoutingCallTests {
         // Then
         rootSegment shouldHaveId "root"
         childSegment shouldHaveId "child"
+    }
+
+    @Test
+    fun `should pop route segment when different route is dispatched with common sub-route`() {
+
+        // Given
+        val oldRouteAction = SetRouteAction(Route("root", "child", "sub-child"))
+        val newRouteAction = SetRouteAction(Route("root", "new-child", "sub-child-new"))
+        var isPopCalled = false
+        val root = FakeRoutable(
+            // push = { segment, _ -> childSegment = segment },
+            pop = { segment, _ -> isPopCalled = true }
+        )
+        store.dispatch(oldRouteAction) // dispatching initial navigation state.
+        val router = router(root)
+        store.subscribe(router) { select { navigationState } }
+
+        // When
+        store.dispatch(newRouteAction) // moving to different route segment under the same common-sub-route(root)
+
+        // Then
+        isPopCalled shouldBeEqualTo true
     }
 }
 
