@@ -101,6 +101,28 @@ class RoutingCallTests {
         rootSegment shouldHaveId "root"
         childSegment shouldHaveId "child"
     }
+
+    @Test
+    fun `should pop route segment when different route is dispatched with common sub-route`() {
+
+        // Given
+        val oldRouteAction = SetRouteAction(Route("root", "child", "sub-child"))
+        val newRouteAction = SetRouteAction(Route("root", "new-child", "sub-child-new"))
+        var isPopCalled = false
+        val root = FakeRoutable(
+            // push = { segment, _ -> childSegment = segment },
+            pop = { segment, _ -> isPopCalled = true }
+        )
+        store.dispatch(oldRouteAction) // dispatching initial navigation state.
+        val router = router(root)
+        store.subscribe(router) { select { navigationState } }
+
+        // When
+        store.dispatch(newRouteAction) // moving to different route segment under the same common-sub-route(root)
+
+        // Then
+        isPopCalled.shouldBeTrue()
+    }
 }
 
 class RouteArgsTests {
